@@ -1,0 +1,29 @@
+@crm.content.encryption.algorithm@
+
+This property defines what encryption algorithm to use when storing files.
+File are by default stored in the filesystem on the application server.
+One of the following algorithms can be used:
+
+@grails.plugins.crm.content.CrmFileResource.NO_ENCRYPTION@
+Files are not encrypted, they are stored in original form.
+
+@grails.plugins.crm.content.CrmFileResource.AES_ENCRYPTION@
+Files are encrypted with AES encryption
+
+@crm.content.encryption.password = '1234567890123456'@
+Encryption key. Must be 16 bytes!
+
+@crm.content.cache.expires = 60 * 10@
+Browser cache expiration (in seconds) for public content.
+
+@crm.content.include.tenant = 1L@
+Default tenant for content rendered with the render tag.
+
+@crm.content.include.path = '/templates'@
+Default path for content rendered with the render tag.
+
+@crm.content.include.parser = 'freemarker'@
+Default parser for content rendered with the render tag.
+
+@crm.content.freemarker.template.updateDelay = 60@
+The FreeMarker service checks if templates has been updated with this interval (in seconds).

@@ -1,0 +1,128 @@
+/*
+ *  Copyright 2014 Goran Ehrsson.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *  under the License.
+ */
+
+import grails.plugins.crm.content.freemarker.CrmContentTemplateLoader
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+
+import org.springframework.web.multipart.commons.CommonsMultipartFile
+
+class CrmContentGrailsPlugin {
+    def groupId = "grails.crm"
+    def version = "1.2.12"
+    def grailsVersion = "2.2 > *"
+    def dependsOn = [:]
+    def observe = ['controllers']
+    def loadAfter = ['crmSecurity', 'crmTags']
+    def pluginExcludes = [
+            "grails-app/domain/grails/plugins/crm/content/TestContentEntity.groovy",
+            "src/groovy/grails/plugins/crm/content/TestSecurityDelegate.groovy",
+            "src/templates/text/**",
+            "src/templates/freemarker/*.*",
+            "grails-app/views/error.gsp"
+    ]
+    def title = "Content Management for GR8 CRM"
+    def author = "Goran Ehrsson"
+    def authorEmail = "goran@technipelago.se"
+    def description = '''\
+This plugin provide storage and services for managing content in GR8 CRM.
+Content can be any type of media like plain text, Microsoft Word, PDF, and images.
+Content can be stored in folders or attached to any type of domain instance.
+'''
+    def documentation = "http://grails.org/plugin/crm-content"
+    def license = "APACHE"
+    def organization = [name: "Technipelago AB", url: "http://www.technipelago.se/"]
+    def issueManagement = [system: "github", url: "https://github.com/technipelago/grails-crm-content/issues"]
+    def scm = [url: "https://github.com/technipelago/grails-crm-content"]
+
+    def doWithSpring = {
+        def fcp = crmFileContentProvider(grails.plugins.crm.content.CrmFileContentProvider)
+        crmContentProviderFactory(grails.plugins.crm.content.DefaultContentProviderFactory) {
+            crmContentProvider = fcp
+        }
+
+        freeMarkerTemplateLoader(CrmContentTemplateLoader) {
+            crmContentService = ref("crmContentService")
+        }
+    }
+
+    def doWithDynamicMethods = { ctx ->
+        def service = ctx.getBean('crmContentService')
+        def config = application.config
+
+        // enhance controllers
+        application.controllerClasses?.each { c ->
+            addControllerMethods config, c.clazz.metaClass, service
+        }
+
+        // enhance domain classes
+        application.domainClasses?.each { d ->
+            if (getAttachmentableProperty(d)) {
+                addDomainMethods config, d.clazz.metaClass, service
+            }
+        }
+    }
+
+    def doWithApplicationContext = { applicationContext ->
+    }
+
+    def onChange = { event ->
+        def ctx = event.ctx
+
+        if (event.source && ctx && event.application) {
+            def service = ctx.getBean('crmContentService')
+            def config = application.config
+
+            // enhance domain class
+            if (application.isDomainClass(event.source)) {
+                def c = application.getDomainClass(event.source.name)
+                if (getAttachmentableProperty(c)) {
+                    addDomainMethods config, c.metaClass, service
+                }
+            }
+            // enhance controller
+            else if (application.isControllerClass(event.source)) {
+                def c = application.getControllerClass(event.source.name)
+                addControllerMethods config, c.metaClass, service
+            }
+        }
+    }
+
+    public static final String ATTACHMENTABLE_PROPERTY_NAME = "attachmentable"
+
+    private getAttachmentableProperty(domainClass) {
+        GrailsClassUtils.getStaticPropertyValue(domainClass.clazz, ATTACHMENTABLE_PROPERTY_NAME)
+    }
+
+    private void addControllerMethods(config, mc, service) {
+        // Nothing yet.
+    }
+
+    private void addDomainMethods(config, mc, service) {
+
+        mc.addAttachment = { CommonsMultipartFile file, Map params = [:] ->
+            service.createResource(file.inputStream, file.originalFilename, file.size, file.contentType, delegate, params)
+        }
+
+        mc.getAttachments = { params = [:] ->
+            service.findResourcesByReference(delegate, params)
+        }
+        mc.deleteAttachments = {->
+            service.deleteAllResources(delegate)
+        }
+    }
+
+}
