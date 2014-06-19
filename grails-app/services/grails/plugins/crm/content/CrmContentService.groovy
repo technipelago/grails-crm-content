@@ -20,6 +20,7 @@ import grails.plugin.cache.Cacheable
 import grails.plugins.crm.core.TenantUtils
 import grails.plugins.crm.core.PagedResultList
 import grails.plugins.crm.core.SearchUtils
+import grails.plugins.selection.Selectable
 import grails.util.GrailsNameUtils
 import grails.events.Listener
 import org.springframework.web.multipart.MultipartFile
@@ -96,6 +97,7 @@ class CrmContentService {
      * @param params pagination parameters
      * @return List of CrmResourceFolder domain instances
      */
+    @Selectable
     def list(Map params = [:]) {
         list([:], params)
     }
@@ -107,6 +109,7 @@ class CrmContentService {
      * @param params pagination parameters
      * @return List of CrmResourceFolder domain instances
      */
+    @Selectable
     def list(Map query, Map params) {
         def tenant = TenantUtils.tenant
         def result = []

@@ -30,18 +30,20 @@ grails.project.dependency.resolution = {
             export = false
         }
         runtime ":hibernate:$grailsVersion"
-        compile ":cache:1.1.1"
 
         test(":spock:0.7") {
             export = false
             exclude "spock-grails-support"
         }
-        test(":codenarc:0.19") { export = false }
+        test(":codenarc:0.21") { export = false }
         test(":code-coverage:1.2.7") { export = false }
 
+        compile ":cache:1.1.1"
+        compile ":selection:0.9.5"
+
         compile "grails.crm:crm-core:latest.integration"
-        runtime "grails.crm:crm-security:latest.integration"
-        runtime "grails.crm:crm-tags:latest.integration"
+        compile "grails.crm:crm-security:latest.integration"
+        compile "grails.crm:crm-tags:latest.integration"
     }
 }
 
