@@ -21,7 +21,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile
 
 class CrmContentGrailsPlugin {
     def groupId = "grails.crm"
-    def version = "1.2.12"
+    def version = "1.2.13"
     def grailsVersion = "2.2 > *"
     def dependsOn = [:]
     def observe = ['controllers']
@@ -39,9 +39,10 @@ class CrmContentGrailsPlugin {
     def description = '''\
 This plugin provide storage and services for managing content in GR8 CRM.
 Content can be any type of media like plain text, Microsoft Word, PDF, and images.
-Content can be stored in folders or attached to any type of domain instance.
+Content can be stored in folders or attached to domain instances.
+Content can be shared with users of the application or shared publicly to the world.
 '''
-    def documentation = "http://grails.org/plugin/crm-content"
+    def documentation = "https://github.com/technipelago/grails-crm-content"
     def license = "APACHE"
     def organization = [name: "Technipelago AB", url: "http://www.technipelago.se/"]
     def issueManagement = [system: "github", url: "https://github.com/technipelago/grails-crm-content/issues"]
@@ -61,11 +62,6 @@ Content can be stored in folders or attached to any type of domain instance.
     def doWithDynamicMethods = { ctx ->
         def service = ctx.getBean('crmContentService')
         def config = application.config
-
-        // enhance controllers
-        application.controllerClasses?.each { c ->
-            addControllerMethods config, c.clazz.metaClass, service
-        }
 
         // enhance domain classes
         application.domainClasses?.each { d ->
@@ -104,10 +100,6 @@ Content can be stored in folders or attached to any type of domain instance.
 
     private getAttachmentableProperty(domainClass) {
         GrailsClassUtils.getStaticPropertyValue(domainClass.clazz, ATTACHMENTABLE_PROPERTY_NAME)
-    }
-
-    private void addControllerMethods(config, mc, service) {
-        // Nothing yet.
     }
 
     private void addDomainMethods(config, mc, service) {
