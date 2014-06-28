@@ -74,6 +74,8 @@ class CrmResourceRef implements CrmContentNode {
     static transients = ['icon', 'path', 'ext', 'reference', 'folder', 'resource', 'metadata', 'lastModified',
             'archived', 'draft', 'published', 'shared', 'statusText', 'dao', 'encoding', 'reader', 'text', 'bytes']
 
+    static taggable = true
+
     @CompileStatic
     public static String removeAccents(String text) {
         return text == null ? null : Normalizer.normalize(text, Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
