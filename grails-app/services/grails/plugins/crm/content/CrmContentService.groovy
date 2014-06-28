@@ -17,12 +17,14 @@ package grails.plugins.crm.content
 
 import grails.plugin.cache.CacheEvict
 import grails.plugin.cache.Cacheable
+import grails.plugins.crm.core.CrmCoreService
 import grails.plugins.crm.core.TenantUtils
 import grails.plugins.crm.core.PagedResultList
 import grails.plugins.crm.core.SearchUtils
 import grails.plugins.selection.Selectable
 import grails.util.GrailsNameUtils
 import grails.events.Listener
+import groovy.transform.CompileStatic
 import org.springframework.web.multipart.MultipartFile
 import org.apache.commons.io.FilenameUtils
 import java.util.regex.Pattern
@@ -32,7 +34,7 @@ class CrmContentService {
     CrmContentProviderFactory crmContentProviderFactory
 
     def grailsApplication
-    def crmCoreService
+    CrmCoreService crmCoreService
     def crmSecurityService
     def crmTagService
     def grailsCacheManager
@@ -83,10 +85,12 @@ class CrmContentService {
         log.warn("Deleted $n resources in tenant $tenant")
     }
 
+    @CompileStatic
     protected String getReferenceIdentifier(object) {
         crmCoreService.getReferenceIdentifier(object)
     }
 
+    @CompileStatic
     def getReference(String identifier) {
         crmCoreService.getReference(identifier)
     }
@@ -155,6 +159,7 @@ class CrmContentService {
         return new PagedResultList(result, size)
     }
 
+    @CompileStatic
     private List paginate(List list, Integer max, Integer offset) {
         offset = Math.min(Math.max(0, offset), list.size() - 1)
         list.subList(offset, Math.min(offset + max, list.size()))
@@ -286,6 +291,7 @@ class CrmContentService {
         return resource
     }
 
+    @CompileStatic
     String guessContentType(String filename) {
         def ext = FilenameUtils.getExtension(filename)
         def contentType
@@ -438,6 +444,7 @@ class CrmContentService {
         return name
     }
 
+    @CompileStatic
     def withInputStream(URI uri, Closure work) {
         def provider = crmContentProviderFactory.getProvider(uri)
         if (!provider) {
@@ -446,6 +453,7 @@ class CrmContentService {
         provider.withInputStream(uri, work)
     }
 
+    @CompileStatic
     long writeTo(URI uri, OutputStream out) {
         def provider = crmContentProviderFactory.getProvider(uri)
         if (!provider) {
@@ -454,6 +462,7 @@ class CrmContentService {
         return provider.read(out, uri)
     }
 
+    @CompileStatic
     Reader getReader(URI uri, String charsetName = null) {
         def provider = crmContentProviderFactory.getProvider(uri)
         if (!provider) {
@@ -467,6 +476,7 @@ class CrmContentService {
      * @param resource resource identifier
      * @return A Map with resource metadata
      */
+    @CompileStatic
     @Cacheable("content")
     Map<String, Object> getMetadata(URI resource) {
         def provider = crmContentProviderFactory.getProvider(resource)
@@ -474,10 +484,11 @@ class CrmContentService {
             throw new IllegalArgumentException("No content provider found for [$resource]")
         }
         Map<String, Object> md = provider.getMetadata(resource)
-        md.icon = getContentIcon(md.contentType)
+        md.icon = getContentIcon((String)md.contentType)
         return md
     }
 
+    @CompileStatic
     @Cacheable("content")
     long getLastModified(URI resource) {
         def provider = crmContentProviderFactory.getProvider(resource)
@@ -528,6 +539,7 @@ class CrmContentService {
         return result
     }
 
+    @CompileStatic
     CrmResourceRef getAttachedResource(Object reference, String name, Integer status = null) {
         findResourcesByReference(reference, [name: name, status: status]).find { it }
     }
@@ -538,6 +550,7 @@ class CrmContentService {
      * @param name name of resource
      * @return resource content bytes
      */
+    @CompileStatic
     byte[] getBytes(Object reference, String name) {
         def result = findResourcesByReference(reference, [name: name])
         if (!result) {
@@ -613,10 +626,12 @@ class CrmContentService {
         return false
     }
 
+    @CompileStatic
     CrmResourceFolder getFolder(String path, Long tenantId = TenantUtils.tenant) {
         getFolderByList(trimPath(path).split(FILE_SEPARATOR_PATTERN).toList(), tenantId)
     }
 
+    @CompileStatic
     private String trimPath(String path) {
         // Trim leading and trailing slashes.
         while (path.startsWith('/') || path.startsWith('\\')) {
@@ -915,6 +930,7 @@ class CrmContentService {
      * @param contentType the MIME content type to select icon for.
      * @param defaultIcon (optional) the default icon if MIME type is not recognized. Default is 'page_white'.
      */
+    @CompileStatic
     String getContentIcon(String contentType, String defaultIcon = null) {
         if (!contentType) {
             return defaultIcon ?: 'page_white'

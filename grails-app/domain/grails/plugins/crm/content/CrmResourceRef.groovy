@@ -16,8 +16,13 @@
 
 package grails.plugins.crm.content
 
+import grails.plugins.crm.core.CrmCoreService
 import grails.plugins.crm.core.TenantEntity
+import groovy.transform.CompileStatic
+import groovy.transform.TypeChecked
 import org.apache.commons.io.FilenameUtils
+import org.codehaus.groovy.grails.commons.GrailsClass
+
 import java.text.Normalizer
 import java.text.Normalizer.Form
 
@@ -69,12 +74,13 @@ class CrmResourceRef implements CrmContentNode {
     static transients = ['icon', 'path', 'ext', 'reference', 'folder', 'resource', 'metadata', 'lastModified',
             'archived', 'draft', 'published', 'shared', 'statusText', 'dao', 'encoding', 'reader', 'text', 'bytes']
 
+    @CompileStatic
     public static String removeAccents(String text) {
         return text == null ? null : Normalizer.normalize(text, Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
     }
 
     // Lazy injection of service.
-    private def getCrmCoreService() {
+    private CrmCoreService getCrmCoreService() {
         if (_crmCoreService == null) {
             synchronized(this) {
                 if (_crmCoreService == null) {
@@ -82,11 +88,11 @@ class CrmResourceRef implements CrmContentNode {
                 }
             }
         }
-        _crmCoreService
+        return (CrmCoreService)_crmCoreService
     }
 
     // Lazy injection of service.
-    private def getCrmContentService() {
+    private CrmContentService getCrmContentService() {
         if (_crmContentService == null) {
             synchronized(this) {
                 if (_crmContentService == null) {
@@ -94,7 +100,7 @@ class CrmResourceRef implements CrmContentNode {
                 }
             }
         }
-        _crmContentService
+        return (CrmContentService)_crmContentService
     }
 
     def beforeValidate() {
@@ -116,30 +122,37 @@ class CrmResourceRef implements CrmContentNode {
         return null
     }
 
+    @CompileStatic
     transient String getExt() {
         FilenameUtils.getExtension(name)
     }
 
+    @CompileStatic
     transient void setReference(object) {
         ref = getCrmCoreService().getReferenceIdentifier(object)
     }
 
+    @CompileStatic
     transient boolean isFolder() {
         return false
     }
 
+    @CompileStatic
     transient Object getReference() {
         getCrmCoreService().getReference(ref)
     }
 
+    @CompileStatic
     transient URI getResource() {
         new URI(res)
     }
 
+    @CompileStatic
     transient Map getDao() {
         [name: name, ext: ext, title: title, description: description, status: status, resource: res]
     }
 
+    @CompileStatic
     transient String getEncoding() {
         if (name.endsWith(".html") || name.endsWith(".htm") || name.endsWith(".txt")) {
             return "UTF-8"
@@ -147,26 +160,32 @@ class CrmResourceRef implements CrmContentNode {
         return null
     }
 
+    @CompileStatic
     transient boolean isArchived() {
         status == STATUS_ARCHIVED
     }
 
+    @CompileStatic
     transient boolean isDraft() {
         status == STATUS_DRAFT
     }
 
+    @CompileStatic
     transient boolean isPublished() {
         status == STATUS_PUBLISHED
     }
 
+    @CompileStatic
     transient boolean isShared() {
         status == STATUS_SHARED
     }
 
+    @CompileStatic
     transient String getStatusText() {
-        STATUS_TEXTS.find { it.value == status }?.key
+        STATUS_TEXTS.find { Map.Entry s -> s.value == status }?.key
     }
 
+    @CompileStatic
     void setStatusText(String arg) {
         def s = STATUS_TEXTS[arg?.toLowerCase()]
         if (s == null) {
@@ -175,37 +194,47 @@ class CrmResourceRef implements CrmContentNode {
         status = s
     }
 
+    @CompileStatic
     transient Map<String, Object> getMetadata() {
         getCrmContentService().getMetadata(resource)
     }
 
+    @CompileStatic
     transient long getLastModified() {
         getCrmContentService().getLastModified(resource)
     }
 
+    @CompileStatic
     def withInputStream(Closure work) {
         getCrmContentService().withInputStream(resource, work)
     }
 
+    @CompileStatic
     long writeTo(OutputStream out) {
         getCrmContentService().writeTo(resource, out)
     }
 
+    @CompileStatic
     Reader getReader(String charsetName) {
         getCrmContentService().getReader(resource, charsetName)
     }
 
+    @CompileStatic
     String getText() {
         new String(getBytes())
     }
 
+    @CompileStatic
     byte[] getBytes() {
         final Map md = getMetadata()
-        final ByteArrayOutputStream out = new ByteArrayOutputStream(md.bytes.intValue())
+        final Long length = (Long)md.bytes
+        final ByteArrayOutputStream out = new ByteArrayOutputStream(length.intValue())
         writeTo(out)
         out.toByteArray()
     }
 
+    @CompileStatic
+    @Override
     String toString() {
         name.toString()
     }
