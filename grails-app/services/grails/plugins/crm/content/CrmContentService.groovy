@@ -49,6 +49,7 @@ class CrmContentService {
         def tenant = event.tenant // [feature: feature, tenant: tenant, role:role, expires:expires]
         TenantUtils.withTenant(tenant) {
             crmTagService.createTag(name: CrmResourceFolder.name, multiple: true)
+            crmTagService.createTag(name: CrmResourceRef.name, multiple: true)
         }
     }
 
@@ -120,15 +121,25 @@ class CrmContentService {
         def nameQuery = query.name ? SearchUtils.wildcard(query.name) : null
         def offset = params.offset ? Integer.valueOf(params.offset.toString()) : 0
         def max = params.max ? Integer.valueOf(params.max.toString()) : null
+        def taggedFolders
+        def taggedFiles
+
+        if (query.tags) {
+            taggedFolders = crmTagService.findAllIdByTag(CrmResourceFolder, query.tags) ?: [0L]
+            taggedFiles = crmTagService.findAllIdByTag(CrmResourceRef, query.tags) ?: [0L]
+        }
 
         def folders = CrmResourceFolder.createCriteria().list(params.subMap(['sort', 'order'])) {
             eq('tenantId', tenant)
+            if (taggedFolders) {
+                inList('id', taggedFolders)
+            }
             if (nameQuery) {
                 or {
                     ilike('name', nameQuery)
                     ilike('title', nameQuery)
                 }
-            } else {
+            } else if(! query.tags) {
                 isNull('parent')
             }
         }
@@ -136,13 +147,18 @@ class CrmContentService {
             result.addAll(folders)
         }
 
-        if (nameQuery) {
+        if (nameQuery || query.tags) {
             def files = CrmResourceRef.createCriteria().list(params.subMap(['sort', 'order'])) {
                 eq('tenantId', tenant)
+                if (taggedFiles) {
+                    inList('id', taggedFiles)
+                }
                 like('ref', GrailsNameUtils.getPropertyName(CrmResourceFolder) + '@%')
-                or {
-                    ilike('name', nameQuery)
-                    ilike('title', nameQuery)
+                if(nameQuery) {
+                    or {
+                        ilike('name', nameQuery)
+                        ilike('title', nameQuery)
+                    }
                 }
             }
             if (files) {

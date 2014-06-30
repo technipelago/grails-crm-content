@@ -31,5 +31,6 @@ class CrmContentQueryCommand implements Serializable {
     String contentType
     String length
     String file
+    String tags
 }
 
