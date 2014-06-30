@@ -39,7 +39,7 @@ grails.project.dependency.resolution = {
         test(":code-coverage:1.2.7") { export = false }
 
         compile ":cache:1.1.1"
-        compile ":selection:0.9.5"
+        compile ":selection:0.9.6"
 
         compile "grails.crm:crm-core:latest.integration"
         compile "grails.crm:crm-security:latest.integration"
