@@ -40,6 +40,7 @@ class CrmContentServiceTests extends GroovyTestCase {
         def ref = crmContentService.createResource(inputStream, "test1.txt", bytes.length, "text/plain", entity)
         assert ref.title == "test1"
         assert ref.name == "test1.txt"
+        assert ref.text == "This is a test"
         assert ref.reference == entity
         assert ref.status == CrmResourceRef.STATUS_PUBLISHED
         assert ref.published
