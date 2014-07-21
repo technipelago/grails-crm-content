@@ -10,7 +10,13 @@ With CRM we mean features like:
 - Task/Todo Lists
 - Project Management
 
-
 ## Content Management Plugin
-This plugin provides storage and services for managing content in GR8 CRM.
-Content can be any type of file, for example Text, Microsoft Word, PDF, and images.
+
+This plugin provide storage and services for managing content in GR8 CRM.
+Content can be any type of media like plain text, Microsoft Word, PDF, and images.
+Content can be stored in folders or attached to domain instances.
+Content can be shared with users of the application or shared publicly to the world.
+
+### Documentation
+
+Complete documentation for this plugin can be found at [gr8crm.github.io](http://gr8crm.github.io/plugins/crm-content/)

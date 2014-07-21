@@ -20,8 +20,8 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.springframework.web.multipart.commons.CommonsMultipartFile
 
 class CrmContentGrailsPlugin {
-    def groupId = "grails.crm"
-    def version = "1.2.14"
+    def groupId = ""
+    def version = "2.0.0"
     def grailsVersion = "2.2 > *"
     def dependsOn = [:]
     def observe = ['controllers']
@@ -42,7 +42,7 @@ Content can be any type of media like plain text, Microsoft Word, PDF, and image
 Content can be stored in folders or attached to domain instances.
 Content can be shared with users of the application or shared publicly to the world.
 '''
-    def documentation = "https://github.com/technipelago/grails-crm-content"
+    def documentation = "http://gr8crm.github.io/plugins/crm-content/"
     def license = "APACHE"
     def organization = [name: "Technipelago AB", url: "http://www.technipelago.se/"]
     def issueManagement = [system: "github", url: "https://github.com/technipelago/grails-crm-content/issues"]
