@@ -1,0 +1,123 @@
+= GR8 CRM - Content Management Plugin
+Göran Ehrsson <goran@technipelago.se>
+:description: Official documentation for the GR8 CRM Content Management Plugin
+:keywords: groovy, grails, crm, gr8crm, documentation
+:toc:
+:numbered:
+:icons: font
+:imagesdir: ./images
+:source-highlighter: prettify
+:homepage: http://gr8crm.github.io
+:gr8crm: GR8 CRM
+:gr8source: https://github.com/technipelago/grails-crm-content
+:license: This plugin is licensed with http://www.apache.org/licenses/LICENSE-2.0.html[Apache License version 2.0]
+
+== Introduction
+
+{gr8crm} is a set of http://www.grails.org/[Grails Web Application Framework]
+plugins that makes it easy to develop web applications with CRM functionality.
+
+You can find more information about {gr8crm} on the main documentation site {homepage}.
+
+=== Customer Relationship Management
+
+Customer relationship management (CRM) is a system for managing a company’s interactions with current and future customers.
+It involves using technology to organize, automate and synchronize sales, marketing, customer service, and technical support.
+http://en.wikipedia.org/wiki/Customer_relationship_management[Wikipedia]
+
+The {gr8crm} "Ecosystem" currently contains over 40 Grails plugins. For a complete list of plugins see {homepage}.
+
+Each {gr8crm} plugin defines a http://martinfowler.com/bliki/BoundedContext.html[Bounded Context]
+that focus on one specific domain, for example *contact*, *project* or *document*.
+
+== Content Management Plugin
+
+This plugin provide storage and services for managing content in {gr8crm} applications.
+Content can be any type of media like plain text, Microsoft Word, PDF, and images.
+Content can be stored in folders or attached to domain instances.
+Content can be shared with users of the application or shared publicly to the world.
+
+Note that this plugin does not contain any user interface components. This plugin contains domain classes and services only.
+The plugin http://gr8crm.github.io/plugins/crm-content-ui/[crm-content-ui] provides a Twitter Bootstrap based user interface
+for managing files, folders and attachments. +crm-content-ui+ depends on +crm-content+ so you only need to include +crm-content-ui+
+in your BuildConfig.groovy if you want end-user content management features.
+
+
+== CrmContentService
+
++CrmResourceRef createResource(InputStream inputStream, String filename, Long length, String contentType, Object reference, Map params = [:])+
+
+Create a new file.
+
+== Code Samples
+
+=== Create a folder
+
+[source,groovy]
+.CreateFolders.groovy
+----
+def rootFolder = crmContentService.createFolder(null, "templates")
+def subFolder = crmContentService.createFolder(rootFolder, "powerpoint")
+----
+
+=== Create a file
+[source.groovy]
+.CreateFile.groovy
+----
+def bytes = "Hello World".getBytes()
+def inputStream = new ByteArrayInputStream(bytes) <1>
+def folder = crmContentService.createFolder(null, "files")
+def doc = crmContentService.createResource(inputStream, "hello.txt", bytes.length, "text/plain", folder)
+assert doc.title == "test1"
+assert doc.name == "test1.txt"
+assert doc.text == "Hello World"
+----
+<1> The stream is closed by createResource(...)
+
+== Configuration
+
++crm.content.encryption.algorithm+
+
+This property defines what encryption algorithm to use when storing files.
+File are by default stored in the filesystem on the application server.
+One of the following algorithms can be used:
+
++grails.plugins.crm.content.CrmFileResource.NO_ENCRYPTION+ (default)
+
+Files are not encrypted, they are stored in original form.
+
++grails.plugins.crm.content.CrmFileResource.AES_ENCRYPTION+
+
+Files are encrypted with AES encryption
+
++crm.content.encryption.password = '1234567890123456'+
+
+Encryption key. Must be 16 bytes!
+
++crm.content.cache.expires = 60 * 10+
+
+Browser cache expiration (in seconds) for public content.
+
++crm.content.include.tenant = 1L+
+
+Default tenant for content rendered with the render tag.
+
++crm.content.include.path = '/templates'+
+
+Default path for content rendered with the render tag.
+
++crm.content.include.parser = 'freemarker'+
+
+Default parser for content rendered with the render tag.
+
++crm.content.freemarker.template.updateDelay = 60+
+
+The FreeMarker service checks if templates has been updated with this interval (in seconds).
+
+== License
+
+{license}
+
+== Source Code
+
+The source code for this plugin is available at {gr8source}
