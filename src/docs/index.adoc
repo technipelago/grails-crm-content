@@ -42,12 +42,113 @@ The plugin http://gr8crm.github.io/plugins/crm-content-ui/[crm-content-ui] provi
 for managing files, folders and attachments. +crm-content-ui+ depends on +crm-content+ so you only need to include +crm-content-ui+
 in your BuildConfig.groovy if you want end-user content management features.
 
+The Content Management plugin is very generic and flexible. It can be used to provide content in any form.
+Here are some real-wold examples on what type of content that can be stored and managed by this plugin.
+
+- System HTML email templates that can be edited by an administrator
+- Attach documents to customer records, like contracts, tenders or spreadsheets
+- User guides in PDF or other eReader formats
+- HTML page fragments to be included in Groovy Server Pages
+- Complete HTML pages to be rendered as part of a web site
+
+== Storage
+
+The +crm-content+ plugin has configurable *storage providers*. The default storage provider store
+content in the web server filesystem. Files on disk can optionally be encrypted for increased security.
+Custom storage providers can be developed to integrate with content services like Amazon S3, Google Drive or Dropbox.
+One application can have multiple storage providers and select the best storage provides based on some business logic.
+Maybe HTML files should be stored in a S3 bucket and customer contracts encrypted on  a local disk.
+
+== Attachments
+
+Content is usually stored in folders but content can also be attached to domain instances.
+In fact when content is stored in a folder, it is actually "attached" to a +CrmResourceFolder+ domain instance.
+So there is no technical difference between files stored in folders and files attached to domain instances.
+
+A +CrmResourceRef+ instance is used to attach content to a domain instance. The +ref+ property references
+the domain instance using a *Resource Identifier* and the +res+ property contains the provider specific URI to the content.
+This is nothing that you need to care about, the framework takes care about setting these properties when you create and attach content.
+
 
 == CrmContentService
+
+This is the main service that you use to create, find, edit and delete files and folders with.
 
 +CrmResourceRef createResource(InputStream inputStream, String filename, Long length, String contentType, Object reference, Map params = [:])+
 
 Create a new file.
+
++def withInputStream(URI uri, Closure work)+
+
+For content referenced by a +URI+ create a new InputStream and pass it into a closure. This method ensures the stream is closed after the closure returns.
+
++Map<String, Object> getMetadata(URI resource)+
+
+Get metadata for the content specified by +resource+. The metadata Map contains the following keys:
+
+- *uri* the provider specific URI for the content
+- *contentType* = MIME content type
+- *bytes* = length in bytes
+- *size* = formatted length
+- *icon* = name of icon that best described the content
+- *created* = Date instance when content was created
+- *modified* = Date instance when content was last updated
+- *hash* = MD5 hash of the content
+- *encrypted* = type of encrypted storage (0 = no encryption)
+
++long updateResource(CrmResourceRef resource, InputStream inputStream, String contentType = null)+
+
+
+[source,groovy]
+.UpdateContent.groovy
+----
+def folder = crmContentService.createFolder(null, "test")
+def bytes = "This is a test".getBytes()
+def inputStream = new ByteArrayInputStream(bytes)
+def ref = crmContentService.createResource(inputStream, "test1.txt", bytes.length, "text/plain", folder) <1>
+bytes = "This is an updated test".getBytes()
+inputStream = new ByteArrayInputStream(bytes)
+crmContentService.updateResource(ref, inputStream) <2>
+def result = new ByteArrayOutputStream()
+ref.writeTo(result)
+def s = new String(result.toByteArray())
+assert s == "This is an updated test"
+----
+<1> Create a file with content "This is a test"
+<2> Update the content to "This is an updated test"
+
+
+== CrmFreeMarkerService
+
+The *FreeMarker* service is used when you want to store FreeMarker templates with the +crm-content+ plugin.
+You can use FreeMarker templates when you send email or render HTML pages.
+If used together with the +crm-content-ui+ plugin you can let administrators edit templates.
+
++void process(String templatePath, Map binding, Writer out)+
+
+Let FreeMarker parse the template located at +templatePath+ in the current tenant.
+Values in +binding+ can be referenced from the template. The output is written to +out+.
+
++void process(Long tenant, String templatePath, Map binding, Writer out)+
+
+Same as above but a tenant can be specified from which templates will be retrieved.
+
++void process(CrmResourceRef ref, Map binding, Writer out)+
+
+Same as above but an instance of +CrmResourceRef+ will be used as template.
+
+
+=== Events
+
+You can also send an asynchronous event that results in a FreeMarker template being parsed.
+
+[source,groovy]
+.EventBasedTemplateParsingTests.groovy
+----
+def reply = event(namespace: 'crm', topic: 'parseTemplate', data: [template: '/templates/hello.txt', greet: 'Groovy'])
+assert reply.value == 'Hello Groovy World'
+----
+
 
 == Code Samples
 
@@ -73,6 +174,7 @@ assert doc.name == "test1.txt"
 assert doc.text == "Hello World"
 ----
 <1> The stream is closed by createResource(...)
+
 
 == Configuration
 
