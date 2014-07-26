@@ -3,8 +3,6 @@ grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 grails.project.target.level = 1.6
 
-grails.project.repos.default = "crm"
-
 grails.project.dependency.resolution = {
     inherits("global") {}
     log "warn"
