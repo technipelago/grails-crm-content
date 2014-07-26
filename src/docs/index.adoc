@@ -54,10 +54,10 @@ Here are some real-wold examples on what type of content that can be stored and 
 == Storage
 
 The +crm-content+ plugin has configurable *storage providers*. The default storage provider store
-content in the web server filesystem. Files on disk can optionally be encrypted for increased security.
+content in the web server filesystem. Files on disc can optionally be encrypted for increased security.
 Custom storage providers can be developed to integrate with content services like Amazon S3, Google Drive or Dropbox.
 One application can have multiple storage providers and select the best storage provides based on some business logic.
-Maybe HTML files should be stored in a S3 bucket and customer contracts encrypted on  a local disk.
+Maybe HTML files should be stored in a S3 bucket and customer contracts encrypted on  a local disc.
 
 == Attachments
 
@@ -71,9 +71,9 @@ This is nothing that you need to care about, the framework takes care about sett
 
 == Security
 
-Content can contain sensitive information, therefore security is a very important in {gr8crm} applications.
+Content be sensitive information, therefore security is a very important in {gr8crm} applications.
 All access to content is checked to make sure the user accessing content has the right privileges.
-Files on disk can optionally be encrypted for increased security.
+Content can optionally be encrypted before it is stored on disc or sent over a network for increased security.
 
 === Access Control
 
@@ -103,7 +103,7 @@ The class +CrmFileResource+ has static +int+ constants for all supported encrypt
 |===
 | Constant                       | Description
 | CrmFileResource.NO_ENCRYPTION  | Content is not encrypted (default)
-| CrmFileResource.AES_ENCRYPTION | Content is encrypted with AES encryption
+| CrmFileResource.AES_ENCRYPTION | Content is encrypted with AES-128 encryption
 |===
 
 You configure the application wide encryption key in Config.groovy. The encryption key must be 16 bytes long.
@@ -111,6 +111,25 @@ You configure the application wide encryption key in Config.groovy. The encrypti
 +crm.content.encryption.password = "1234567890123456"+
 
 NOTE: The current implementation of +CrmFileResource+ encrypts *all* content if +crm.content.encryption.password+ is set.
+
+== Web Access
+
+Content can be accessed via a URL and the +crm-content+ plugin configures a set of URL mappings for this purpose.
+Note that access control restrictions apply.
+
+[options="header"]
+|===
+| URL Pattern             | Description                           | Example
+| /s/$t/$domain/$id/$file | Content attached to a domain instance | http://appname/s/1/crmProduct/1/icon-144.png
+| /r/$t/$uri**            | Content stored in a folder            | http://appname/r/1/rootfolder/subfolder/file.pdf
+| /f/$t/$uri**            | List all files in a folder            | http://appname/f/1/rootfolder/subfolder
+|===
+
+*t* -> Tenant ID +
+*domain* -> Domain name in short (property name) format +
+*id* -> ID of domain instance +
+*file* -> filename +
+*uri* -> any path +
 
 == CrmContentService
 

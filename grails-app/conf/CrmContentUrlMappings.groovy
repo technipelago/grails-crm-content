@@ -18,7 +18,7 @@
 class CrmContentUrlMappings {
     static mappings = {
         /**
-         * http://www.mycompany.com/r/1/crmProduct/1/icon-144.png
+         * http://www.mycompany.com/s/1/crmProduct/1/icon-144.png
          */
         "/s/$t/$domain/$id/$file" {
             controller = "crmFileAccess"
@@ -40,7 +40,7 @@ class CrmContentUrlMappings {
             }
         }
         /**
-         * http://www.mycompany.com/r/1/folder/subfolder
+         * http://www.mycompany.com/f/1/folder/subfolder
          */
         "/f/$t/$uri**" {
             controller = "crmFileAccess"
