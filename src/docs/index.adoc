@@ -73,6 +73,10 @@ This is nothing that you need to care about, the framework takes care about sett
 
 Content can contain sensitive information, therefore security is a very important in {gr8crm} applications.
 All access to content is checked to make sure the user accessing content has the right privileges.
+Files on disk can optionally be encrypted for increased security.
+
+=== Access Control
+
 An instance of the domain class +CrmResourceRef+ is always involved when working with content. It represents a "handle"
 to the content. It has properties like +filename+, +title+ and +description+. Another important property is +status+ that
 specifies the status and access rights for the content. The class +CrmResourceRef+ has one static +int+ constant for each
@@ -82,11 +86,31 @@ possible status a content instance can have. The constants are listed below.
 [options="header"]
 |===
 | Constant                        | Description
-| CrmResourceRef.STATUS_ARCHIVED  | Content is archived and only accessible by authenticated users
 | CrmResourceRef.STATUS_DRAFT     | Content is in draft state and only accessible by authenticated users
+| CrmResourceRef.STATUS_ARCHIVED  | Content is archived and only accessible by authenticated users
 | CrmResourceRef.STATUS_PUBLISHED | Content is active/current but only accessible by authenticated users
 | CrmResourceRef.STATUS_SHARED    | Content is accessible by anyone, no authentication needed = *public access if URL is known!*
 |===
+
+=== Encryption
+
+Content can be encrypted before it's stored in the server filesystem.
+
+The class +CrmFileResource+ has static +int+ constants for all supported encryption algorithms.
+
+.Content Encryption
+[options="header"]
+|===
+| Constant                       | Description
+| CrmFileResource.NO_ENCRYPTION  | Content is not encrypted (default)
+| CrmFileResource.AES_ENCRYPTION | Content is encrypted with AES encryption
+|===
+
+You configure the application wide encryption key in Config.groovy. The encryption key must be 16 bytes long.
+
++crm.content.encryption.password = "1234567890123456"+
+
+NOTE: The current implementation of +CrmFileResource+ encrypts *all* content if +crm.content.encryption.password+ is set.
 
 == CrmContentService
 
@@ -179,7 +203,7 @@ Get metadata for the content specified by +resource+. The metadata Map contains 
 | contentType | MIME content type
 | bytes       | length in bytes
 | size        | formatted length
-| icon        | name of icon that best described the content
+| icon        | name of icon that best describes the content
 | created     | Date instance when content was created
 | modified    | Date instance when content was last updated
 | hash        | MD5 hash of the content
@@ -190,6 +214,7 @@ Get metadata for the content specified by +resource+. The metadata Map contains 
 
 +long updateResource(CrmResourceRef resource, InputStream inputStream, String contentType = null)+
 
+Update/overwrite existing content.
 
 [source,groovy]
 .UpdateContent.groovy
@@ -289,7 +314,7 @@ Files are not encrypted, they are stored in original form.
 
 Files are encrypted with AES encryption
 
-+crm.content.encryption.password = '1234567890123456'+
++crm.content.encryption.password = "1234567890123456"+
 
 Encryption key. Must be 16 bytes!
 
