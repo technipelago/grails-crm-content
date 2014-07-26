@@ -69,32 +69,124 @@ A +CrmResourceRef+ instance is used to attach content to a domain instance. The 
 the domain instance using a *Resource Identifier* and the +res+ property contains the provider specific URI to the content.
 This is nothing that you need to care about, the framework takes care about setting these properties when you create and attach content.
 
+== Security
+
+Content can contain sensitive information, therefore security is a very important in {gr8crm} applications.
+All access to content is checked to make sure the user accessing content has the right privileges.
+An instance of the domain class +CrmResourceRef+ is always involved when working with content. It represents a "handle"
+to the content. It has properties like +filename+, +title+ and +description+. Another important property is +status+ that
+specifies the status and access rights for the content. The class +CrmResourceRef+ has one static +int+ constant for each
+possible status a content instance can have. The constants are listed below.
+
+.Content Status
+[options="header"]
+|===
+| Constant                        | Description
+| CrmResourceRef.STATUS_ARCHIVED  | Content is archived and only accessible by authenticated users
+| CrmResourceRef.STATUS_DRAFT     | Content is in draft state and only accessible by authenticated users
+| CrmResourceRef.STATUS_PUBLISHED | Content is active/current but only accessible by authenticated users
+| CrmResourceRef.STATUS_SHARED    | Content is accessible by anyone, no authentication needed = *public access if URL is known!*
+|===
 
 == CrmContentService
 
 This is the main service that you use to create, find, edit and delete files and folders with.
 
+=== createResource
+
 +CrmResourceRef createResource(InputStream inputStream, String filename, Long length, String contentType, Object reference, Map params = [:])+
 
-Create a new file.
+Create a new file from an InputStream.
+
+[options="header"]
+|===
+| Parameter    | Description
+| inputStream  | The input stream to read content from
+| filename     | Name of content, this is later used when accessing this content
+| length       | Content length in bytes
+| contentType  | MIME content type
+| reference    | a domain instance or a reference identifier to attach the content to
+| params       | optional parameters like +status+, +title+ and +description+ for the content
+|===
+
+If the content creation succeeds an instance of +CrmResourceRef+ is returned. This is an active "handle" to the content.
+
+The +resource+ property on CrmResourceRef return a +URI+ instance. This URI is used by other service methods, for example when reading and writing content.
+
+The following code copies (moves) a PDF file from the server to a */presentations* folder in {gr8crm}.
+
+[source,groovy]
+.CreateContent.groovy
+----
+def folder = crmContentService.createFolder(null, "presentations")
+def serverFile = new File("presentation.pdf")
+def pdf = serverFile.withInputStream{inputStream->
+    crmContentService.createResource(inputStream, serverFile.name, serverFile.length(), "application/pdf", folder)
+}
+serverFile.delete() // <1>
+
+assert pdf.name == "presentation.pdf"
+----
+<1> The server file is copied into, and managed by {gr8crm} so it's not needed anymore.
+
+=== withInputStream
 
 +def withInputStream(URI uri, Closure work)+
 
 For content referenced by a +URI+ create a new InputStream and pass it into a closure. This method ensures the stream is closed after the closure returns.
 
+[source,groovy]
+.CopyContentToServerFile.groovy
+----
+def content = crmContentService.getContentByPath("/presentations/2014/gr8conf/eu/goeh-feature-plugins.pdf")
+crmContentService.withInputStream(content.resource) { inputStream ->
+    new File("/tmp/feature-plugins.pdf").withOutputStream{ outputStream ->
+        outputStream << inputStream
+    }
+}
+----
+
+=== writeTo
+
++long writeTo(URI uri, OutputStream out)+
+
+Write content to an OutputStream.
+
+[source,groovy]
+.MyDocController.groovy
+----
+def show(Long id) {
+    def content = crmContentService.getResourceRef(id) // <1>
+    def metadata = content.metadata
+    response.setContentType(metadata.contentType)
+    response.setContentLength(metadata.bytes.intValue())
+    crmContentService.writeTo(content.resource, response.outputStream) // <2>
+}
+----
+<1> Lookup content by ID
+<2> Render content to the response stream. This line can be shortened to: +content.writeTo(response.outputStream)+
+
+=== getMetadata
+
 +Map<String, Object> getMetadata(URI resource)+
 
 Get metadata for the content specified by +resource+. The metadata Map contains the following keys:
 
-- *uri* the provider specific URI for the content
-- *contentType* = MIME content type
-- *bytes* = length in bytes
-- *size* = formatted length
-- *icon* = name of icon that best described the content
-- *created* = Date instance when content was created
-- *modified* = Date instance when content was last updated
-- *hash* = MD5 hash of the content
-- *encrypted* = type of encrypted storage (0 = no encryption)
+[options="header"]
+|===
+| Key         | Description
+| uri         | the provider specific URI for the content
+| contentType | MIME content type
+| bytes       | length in bytes
+| size        | formatted length
+| icon        | name of icon that best described the content
+| created     | Date instance when content was created
+| modified    | Date instance when content was last updated
+| hash        | MD5 hash of the content
+| encrypted   | type of encrypted storage (0 = no encryption)
+|===
+
+=== updateResource
 
 +long updateResource(CrmResourceRef resource, InputStream inputStream, String contentType = null)+
 
@@ -120,9 +212,11 @@ assert s == "This is an updated test"
 
 == CrmFreeMarkerService
 
-The *FreeMarker* service is used when you want to store FreeMarker templates with the +crm-content+ plugin.
+The *FreeMarker* service is used when you want to store http://freemarker.org[FreeMarker^] templates with the +crm-content+ plugin.
 You can use FreeMarker templates when you send email or render HTML pages.
-If used together with the +crm-content-ui+ plugin you can let administrators edit templates.
+If used together with the +crm-content-ui+ plugin you can let administrators edit templates with an HTML editor.
+
+=== process
 
 +void process(String templatePath, Map binding, Writer out)+
 
@@ -138,9 +232,11 @@ Same as above but a tenant can be specified from which templates will be retriev
 Same as above but an instance of +CrmResourceRef+ will be used as template.
 
 
-=== Events
+== Events
 
-You can also send an asynchronous event that results in a FreeMarker template being parsed.
+You can also send an asynchronous event that results in a template being parsed.
+
+=== parseTemplate
 
 [source,groovy]
 .EventBasedTemplateParsingTests.groovy
@@ -175,6 +271,7 @@ assert doc.text == "Hello World"
 ----
 <1> The stream is closed by createResource(...)
 
+TIP: You can look at the source code for the https://github.com/technipelago/grails-crm-content/tree/master/test/integration/grails/plugins/crm/content[integration tests^] to find more code examples.
 
 == Configuration
 
