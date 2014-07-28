@@ -33,7 +33,7 @@ class CrmContentGrailsPlugin {
             "src/templates/freemarker/*.*",
             "grails-app/views/error.gsp"
     ]
-    def title = "Content Management for GR8 CRM"
+    def title = "Content Management Services for GR8 CRM"
     def author = "Goran Ehrsson"
     def authorEmail = "goran@technipelago.se"
     def description = '''\
