@@ -364,3 +364,9 @@ The FreeMarker service checks if templates has been updated with this interval (
 == Source Code
 
 The source code for this plugin is available at {gr8source}
+
+== Contributing
+
+Please report {gr8source}/issues[issues or suggestions].
+
+Want to improve the plugin: Fork the {gr8source}[repository] and send a pull request.
