@@ -21,7 +21,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile
 
 class CrmContentGrailsPlugin {
     def groupId = ""
-    def version = "2.0.0"
+    def version = "2.0.1-SNAPSHOT"
     def grailsVersion = "2.2 > *"
     def dependsOn = [:]
     def observe = ['controllers']
@@ -37,7 +37,7 @@ class CrmContentGrailsPlugin {
     def author = "Goran Ehrsson"
     def authorEmail = "goran@technipelago.se"
     def description = '''\
-This plugin provide storage and services for managing content in GR8 CRM.
+This plugin provide storage and services for managing content in GR8 CRM applications.
 Content can be any type of media like plain text, Microsoft Word, PDF, and images.
 Content can be stored in folders or attached to domain instances.
 Content can be shared with users of the application or shared publicly to the world.
