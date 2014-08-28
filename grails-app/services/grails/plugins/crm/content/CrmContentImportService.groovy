@@ -48,7 +48,7 @@ class CrmContentImportService {
             dirs << settings.getBaseDir()
             templates = []
             for (dir in dirs) {
-                // Look for FreeMarker templates.
+                // Look for files in src/<folderName>/...
                 def templatePath = new File(dir, "src/${folderName}")
                 if (templatePath.exists()) {
                     templatePath.eachFileRecurse(FileType.FILES) { file ->
@@ -62,7 +62,7 @@ class CrmContentImportService {
 
         if (templates) {
             for (file in templates.findAll { it.file && !it.hidden }) {
-                def path = StringUtils.substringAfter(file.parentFile.toString(), "/${folderName}".toString())
+                def path = StringUtils.substringAfter(file.parentFile.toString(), File.separator + folderName)
                 def folder = crmContentService.getFolder(path)
                 if (!folder) {
                     folder = crmContentService.createFolders(path)
