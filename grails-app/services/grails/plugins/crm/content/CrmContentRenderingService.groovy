@@ -17,6 +17,7 @@
 package grails.plugins.crm.content
 
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.springframework.core.io.DescriptiveResource
 
 /**
@@ -27,6 +28,7 @@ class CrmContentRenderingService {
     def grailsApplication
     def crmContentService
     def crmFreeMarkerService
+    def tagLibraryLookup
 
     /**
      * Parse the template with GroovyPagesTemplateEngine.
@@ -39,9 +41,17 @@ class CrmContentRenderingService {
         def classLoader = new GroovyClassLoader(grailsApplication.classLoader)
         def engine
         try {
+            // We create a new template engine each time, to avoid class loader leaks.
             def applicationContext = grailsApplication.mainContext
             engine = new GroovyPagesTemplateEngine(applicationContext.servletContext)
             engine.setApplicationContext(applicationContext)
+            if(tagLibraryLookup == null) {
+                tagLibraryLookup = new TagLibraryLookup()
+                tagLibraryLookup.grailsApplication = grailsApplication
+                tagLibraryLookup.applicationContext = applicationContext
+                tagLibraryLookup.afterPropertiesSet()
+            }
+            engine.setTagLibraryLookup(tagLibraryLookup)
             crmContentService.withInputStream(template.getResource()) { is ->
                 engine.setClassLoader(classLoader)
                 engine.createTemplate(is, res, res.description).make(model).writeTo(out)
@@ -77,12 +87,16 @@ class CrmContentRenderingService {
 
         switch (parser) {
             case 'gsp':
-                model.tenant = resourceInstance.tenantId
+                if(model.tenant == null) {
+                    model.tenant = resourceInstance.tenantId
+                }
                 renderGsp(resourceInstance, out, model)
                 break
             case 'freemarker':
             case 'fm':
-                model.tenant = resourceInstance.tenantId
+                if(model.tenant == null) {
+                    model.tenant = resourceInstance.tenantId
+                }
                 renderFreemarker(resourceInstance, out, model)
                 break
             default:
