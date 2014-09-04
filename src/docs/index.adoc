@@ -39,7 +39,7 @@ Content can be shared with users of the application or shared publicly to the wo
 
 Note that this plugin does not contain any user interface components. This plugin contains domain classes and services only.
 The plugin http://gr8crm.github.io/plugins/crm-content-ui/[crm-content-ui] provides a Twitter Bootstrap based user interface
-for managing files, folders and attachments. +crm-content-ui+ depends on +crm-content+ so you only need to include +crm-content-ui+
+for managing files, folders and attachments. `crm-content-ui` depends on `crm-content` so you only need to include `crm-content-ui`
 in your BuildConfig.groovy if you want end-user content management features.
 
 The Content Management plugin is very generic and flexible. It can be used to provide content in any form.
@@ -53,7 +53,7 @@ Here are some real-wold examples on what type of content that can be stored and 
 
 == Storage
 
-The +crm-content+ plugin has configurable *storage providers*. The default storage provider store
+The `crm-content` plugin has configurable *storage providers*. The default storage provider store
 content in the web server filesystem. Files on disc can optionally be encrypted for increased security.
 Custom storage providers can be developed to integrate with content services like Amazon S3, Google Drive or Dropbox.
 One application can have multiple storage providers and select the best storage provides based on some business logic.
@@ -62,11 +62,11 @@ Maybe HTML files should be stored in a S3 bucket and customer contracts encrypte
 == Attachments
 
 Content is usually stored in folders but content can also be attached to domain instances.
-In fact when content is stored in a folder, it is actually "attached" to a +CrmResourceFolder+ domain instance.
+In fact when content is stored in a folder, it is actually "attached" to a `CrmResourceFolder` domain instance.
 So there is no technical difference between files stored in folders and files attached to domain instances.
 
-A +CrmResourceRef+ instance is used to attach content to a domain instance. The +ref+ property references
-the domain instance using a *Resource Identifier* and the +res+ property contains the provider specific URI to the content.
+A `CrmResourceRef` instance is used to attach content to a domain instance. The `ref` property references
+the domain instance using a *Resource Identifier* and the `res` property contains the provider specific URI to the content.
 This is nothing that you need to care about, the framework takes care about setting these properties when you create and attach content.
 
 == Security
@@ -77,9 +77,9 @@ Content can optionally be encrypted before it is stored on disc or sent over a n
 
 === Access Control
 
-An instance of the domain class +CrmResourceRef+ is always involved when working with content. It represents a "handle"
-to the content. It has properties like +filename+, +title+ and +description+. Another important property is +status+ that
-specifies the status and access rights for the content. The class +CrmResourceRef+ has one static +int+ constant for each
+An instance of the domain class `CrmResourceRef` is always involved when working with content. It represents a "handle"
+to the content. It has properties like `filename`, `title` and `description`. Another important property is `status` that
+specifies the status and access rights for the content. The class `CrmResourceRef` has one static `int` constant for each
 possible status a content instance can have. The constants are listed below.
 
 .Content Status
@@ -96,7 +96,7 @@ possible status a content instance can have. The constants are listed below.
 
 Content can be encrypted before it's stored in the server filesystem.
 
-The class +CrmFileResource+ has static +int+ constants for all supported encryption algorithms.
+The class `CrmFileResource` has static `int` constants for all supported encryption algorithms.
 
 .Content Encryption
 [options="header"]
@@ -108,13 +108,13 @@ The class +CrmFileResource+ has static +int+ constants for all supported encrypt
 
 You configure the application wide encryption key in Config.groovy. The encryption key must be 16 bytes long.
 
-+crm.content.encryption.password = "1234567890123456"+
+`crm.content.encryption.password = "1234567890123456"`
 
-NOTE: The current implementation of +CrmFileResource+ encrypts *all* content if +crm.content.encryption.password+ is set.
+NOTE: The current implementation of `CrmFileResource` encrypts *all* content if `crm.content.encryption.password` is set.
 
 == Web Access
 
-Content can be accessed via a URL and the +crm-content+ plugin configures a set of URL mappings for this purpose.
+Content can be accessed via a URL and the `crm-content` plugin configures a set of URL mappings for this purpose.
 Note that access control restrictions apply.
 
 [options="header"]
@@ -137,7 +137,7 @@ This is the main service that you use to create, find, edit and delete files and
 
 === createResource
 
-+CrmResourceRef createResource(InputStream inputStream, String filename, Long length, String contentType, Object reference, Map params = [:])+
+`CrmResourceRef createResource(InputStream inputStream, String filename, Long length, String contentType, Object reference, Map params = [:])`
 
 Create a new file from an InputStream.
 
@@ -149,12 +149,12 @@ Create a new file from an InputStream.
 | length       | Content length in bytes
 | contentType  | MIME content type
 | reference    | a domain instance or a reference identifier to attach the content to
-| params       | optional parameters like +status+, +title+ and +description+ for the content
+| params       | optional parameters like `status`, `title` and `description` for the content
 |===
 
-If the content creation succeeds an instance of +CrmResourceRef+ is returned. This is an active "handle" to the content.
+If the content creation succeeds an instance of `CrmResourceRef` is returned. This is an active "handle" to the content.
 
-The +resource+ property on CrmResourceRef return a +URI+ instance. This URI is used by other service methods, for example when reading and writing content.
+The `resource` property on CrmResourceRef return a `URI` instance. This URI is used by other service methods, for example when reading and writing content.
 
 The following code copies (moves) a PDF file from the server to a */presentations* folder in {gr8crm}.
 
@@ -174,9 +174,9 @@ assert pdf.name == "presentation.pdf"
 
 === withInputStream
 
-+def withInputStream(URI uri, Closure work)+
+`def withInputStream(URI uri, Closure work)`
 
-For content referenced by a +URI+ create a new InputStream and pass it into a closure. This method ensures the stream is closed after the closure returns.
+For content referenced by a `URI` create a new InputStream and pass it into a closure. This method ensures the stream is closed after the closure returns.
 
 [source,groovy]
 .CopyContentToServerFile.groovy
@@ -191,7 +191,7 @@ crmContentService.withInputStream(content.resource) { inputStream ->
 
 === writeTo
 
-+long writeTo(URI uri, OutputStream out)+
+`long writeTo(URI uri, OutputStream out)`
 
 Write content to an OutputStream.
 
@@ -207,13 +207,13 @@ def show(Long id) {
 }
 ----
 <1> Lookup content by ID
-<2> Render content to the response stream. This line can be shortened to: +content.writeTo(response.outputStream)+
+<2> Render content to the response stream. This line can be shortened to: `content.writeTo(response.outputStream)`
 
 === getMetadata
 
-+Map<String, Object> getMetadata(URI resource)+
+`Map<String, Object> getMetadata(URI resource)`
 
-Get metadata for the content specified by +resource+. The metadata Map contains the following keys:
+Get metadata for the content specified by `resource`. The metadata Map contains the following keys:
 
 [options="header"]
 |===
@@ -231,7 +231,7 @@ Get metadata for the content specified by +resource+. The metadata Map contains 
 
 === updateResource
 
-+long updateResource(CrmResourceRef resource, InputStream inputStream, String contentType = null)+
+`long updateResource(CrmResourceRef resource, InputStream inputStream, String contentType = null)`
 
 Update/overwrite existing content.
 
@@ -256,24 +256,24 @@ assert s == "This is an updated test"
 
 == CrmFreeMarkerService
 
-The *FreeMarker* service is used when you want to store http://freemarker.org[FreeMarker^] templates with the +crm-content+ plugin.
+The *FreeMarker* service is used when you want to store http://freemarker.org[FreeMarker^] templates with the `crm-content` plugin.
 You can use FreeMarker templates when you send email or render HTML pages.
-If used together with the +crm-content-ui+ plugin you can let administrators edit templates with an HTML editor.
+If used together with the `crm-content-ui` plugin you can let administrators edit templates with an HTML editor.
 
 === process
 
-+void process(String templatePath, Map binding, Writer out)+
+`void process(String templatePath, Map binding, Writer out)`
 
-Let FreeMarker parse the template located at +templatePath+ in the current tenant.
-Values in +binding+ can be referenced from the template. The output is written to +out+.
+Let FreeMarker parse the template located at `templatePath` in the current tenant.
+Values in `binding` can be referenced from the template. The output is written to `out`.
 
-+void process(Long tenant, String templatePath, Map binding, Writer out)+
+`void process(Long tenant, String templatePath, Map binding, Writer out)`
 
 Same as above but a tenant can be specified from which templates will be retrieved.
 
-+void process(CrmResourceRef ref, Map binding, Writer out)+
+`void process(CrmResourceRef ref, Map binding, Writer out)`
 
-Same as above but an instance of +CrmResourceRef+ will be used as template.
+Same as above but an instance of `CrmResourceRef` will be used as template.
 
 
 == Events
@@ -319,41 +319,41 @@ TIP: You can look at the source code for the https://github.com/technipelago/gra
 
 == Configuration
 
-+crm.content.encryption.algorithm+
+`crm.content.encryption.algorithm`
 
 This property defines what encryption algorithm to use when storing files.
 File are by default stored in the filesystem on the application server.
 One of the following algorithms can be used:
 
-+grails.plugins.crm.content.CrmFileResource.NO_ENCRYPTION+ (default)
+`grails.plugins.crm.content.CrmFileResource.NO_ENCRYPTION` (default)
 
 Files are not encrypted, they are stored in original form.
 
-+grails.plugins.crm.content.CrmFileResource.AES_ENCRYPTION+
+`grails.plugins.crm.content.CrmFileResource.AES_ENCRYPTION`
 
 Files are encrypted with AES encryption
 
-+crm.content.encryption.password = "1234567890123456"+
+`crm.content.encryption.password = "1234567890123456"`
 
 Encryption key. Must be 16 bytes!
 
-+crm.content.cache.expires = 60 * 10+
+`crm.content.cache.expires = 60 * 10`
 
 Browser cache expiration (in seconds) for public content.
 
-+crm.content.include.tenant = 1L+
+`crm.content.include.tenant = 1L`
 
 Default tenant for content rendered with the render tag.
 
-+crm.content.include.path = '/templates'+
+`crm.content.include.path = '/templates'`
 
 Default path for content rendered with the render tag.
 
-+crm.content.include.parser = 'freemarker'+
+`crm.content.include.parser = 'freemarker'`
 
 Default parser for content rendered with the render tag.
 
-+crm.content.freemarker.template.updateDelay = 60+
+`crm.content.freemarker.template.updateDelay = 60`
 
 The FreeMarker service checks if templates has been updated with this interval (in seconds).
 
