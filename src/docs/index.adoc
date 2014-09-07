@@ -357,6 +357,14 @@ Default parser for content rendered with the render tag.
 
 The FreeMarker service checks if templates has been updated with this interval (in seconds).
 
+== Changes
+
+2.0.2:: Grails tags are now supported when using the `crm:render` tag with option `parser="gsp"`. +
+Improved handling of illegal characters in file names. +
+CrmContentImportService#importFiles(...) now works on Windows.
+2.0.1:: Updated dependency on crm-core to version 2.0.2
+2.0.0:: First public release
+
 == License
 
 {license}
