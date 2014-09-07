@@ -77,7 +77,12 @@ class CrmResourceRef implements CrmContentNode {
 
     @CompileStatic
     public static String removeAccents(String text) {
-        return text == null ? null : Normalizer.normalize(text, Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+        return text != null ? Normalizer.normalize(text, Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "") : null
+    }
+
+    @CompileStatic
+    public static String normalizeName(String name) {
+        name != null ? StringUtils.replaceChars(FilenameUtils.normalize(removeAccents(name)), '\\/|"\':?*<>', '---__...()') : null
     }
 
     // Lazy injection of service.
@@ -108,7 +113,9 @@ class CrmResourceRef implements CrmContentNode {
         if (!name) {
             name = title
         }
-        name = StringUtils.replaceChars(FilenameUtils.normalize(removeAccents(name)), '\\/|"\':?*<>', '---__...()')
+        if(name != null) {
+            name = normalizeName(name)
+        }
     }
 
     transient String getIcon() {

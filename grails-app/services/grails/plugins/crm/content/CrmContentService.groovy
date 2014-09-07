@@ -224,7 +224,7 @@ class CrmContentService {
         }
         def title = params.title ?: FilenameUtils.getBaseName(filename)
         def name = params.name ?: FilenameUtils.getName(filename)
-        def normalizedName = FilenameUtils.normalize(CrmResourceRef.removeAccents(name)).replaceAll(/[\/\\]+/, '-')
+        def normalizedName = CrmResourceRef.normalizeName(name)
         def username = params.username ?: crmSecurityService.currentUser?.username
         def provider = crmContentProviderFactory.getProvider(normalizedName, length, reference, username)
         def referenceIdentifier = crmCoreService.getReferenceIdentifier(reference)
@@ -796,7 +796,7 @@ class CrmContentService {
         if (ownerIdentifier) {
             resource = CrmResourceRef.createCriteria().get() {
                 eq('tenantId', tenantId)
-                eq('name', CrmResourceFolder.normalizeName(filename))
+                eq('name', CrmResourceRef.normalizeName(filename))
                 eq('ref', ownerIdentifier)
                 cache true
             }

@@ -18,6 +18,8 @@ package grails.plugins.crm.content
 
 import grails.plugins.crm.core.TenantEntity
 import grails.plugins.crm.core.UuidEntity
+import groovy.transform.CompileStatic
+import org.apache.commons.lang.StringUtils
 
 import java.text.Normalizer
 import java.text.Normalizer.Form
@@ -67,12 +69,14 @@ class CrmResourceFolder implements CrmContentNode {
 
     static taggable = true
 
+    @CompileStatic
     public static String removeAccents(String text) {
-        return text == null ? null : Normalizer.normalize(text, Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+        return text != null ? Normalizer.normalize(text, Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "") : null
     }
 
+    @CompileStatic
     public static String normalizeName(String name) {
-        FilenameUtils.normalize(removeAccents(name)).replaceAll('/', '-')
+        name != null ? StringUtils.replaceChars(FilenameUtils.normalize(removeAccents(name)), '\\/|"\':?*<>', '---__...()') : null
     }
 
     def beforeValidate() {
@@ -82,7 +86,10 @@ class CrmResourceFolder implements CrmContentNode {
         if (!name) {
             name = title
         }
-        name = normalizeName(name)
+
+        if(name != null) {
+            name = normalizeName(name)
+        }
     }
 
     def beforeInsert() {
