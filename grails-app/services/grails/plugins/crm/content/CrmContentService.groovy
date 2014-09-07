@@ -717,8 +717,10 @@ class CrmContentService {
     CrmResourceFolder createFolders(String path) {
         def parts = FilenameUtils.normalize(trimPath(path)).split(FILE_SEPARATOR_PATTERN)
         def folder
-        for (part in parts) {
-            folder = createFolder(folder, part)
+        if(parts) {
+            for (part in parts) {
+                folder = createFolder(folder, part)
+            }
         }
         return folder
     }

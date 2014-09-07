@@ -35,9 +35,10 @@ class CrmContentImportService {
      * @return number of imported files
      */
     int importFiles(final String folderName, String username = null) {
+        final String folderNameUnix = folderName ? StringUtils.replaceChars(folderName, '\\', '/') : null
         List<File> templates
         if (grailsApplication.warDeployed) {
-            templates = grailsApplication.mainContext.getResources("**/WEB-INF/${folderName}/**".toString())?.toList().collect {
+            templates = grailsApplication.mainContext.getResources("**/WEB-INF/${folderNameUnix}/**".toString())?.toList().collect {
                 it.file
             }
         } else {
@@ -49,7 +50,7 @@ class CrmContentImportService {
             templates = []
             for (dir in dirs) {
                 // Look for files in src/<folderName>/...
-                def templatePath = new File(dir, "src/${folderName}")
+                def templatePath = new File(dir, "src/${folderNameUnix}")
                 if (templatePath.exists()) {
                     templatePath.eachFileRecurse(FileType.FILES) { file ->
                         templates << file
@@ -61,14 +62,18 @@ class CrmContentImportService {
         int counter = 0
 
         if (templates) {
+            final String folderNameNative = StringUtils.replaceChars(folderName, '\\/', File.separator + File.separator)
             for (file in templates.findAll { it.file && !it.hidden }) {
-                def path = StringUtils.substringAfter(file.parentFile.toString(), File.separator + folderName)
+                String path = StringUtils.substringAfter(file.parentFile.toString(), File.separator + folderNameNative) ?: null
+                if(!path) {
+                    throw new IllegalArgumentException("Invalid folder [$folderNameNative]")
+                }
                 def folder = crmContentService.getFolder(path)
                 if (!folder) {
                     folder = crmContentService.createFolders(path)
                 }
                 crmContentService.createResource(file, null, folder, [status: "shared", username: username, overwrite: true])
-                log.debug "Loaded template $file into folder /${folder.path.join('/')}"
+                log.debug "Loaded template $file into folder /${folder ? folder.path.join('/') : ''}"
                 counter++
             }
         }
