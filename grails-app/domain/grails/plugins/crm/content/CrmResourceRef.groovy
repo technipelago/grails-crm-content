@@ -19,9 +19,8 @@ package grails.plugins.crm.content
 import grails.plugins.crm.core.CrmCoreService
 import grails.plugins.crm.core.TenantEntity
 import groovy.transform.CompileStatic
-import groovy.transform.TypeChecked
 import org.apache.commons.io.FilenameUtils
-import org.codehaus.groovy.grails.commons.GrailsClass
+import org.apache.commons.lang.StringUtils
 
 import java.text.Normalizer
 import java.text.Normalizer.Form
@@ -109,7 +108,7 @@ class CrmResourceRef implements CrmContentNode {
         if (!name) {
             name = title
         }
-        name = FilenameUtils.normalize(removeAccents(name)).replaceAll('/', '-')
+        name = StringUtils.replaceChars(FilenameUtils.normalize(removeAccents(name)), '\\/|"\':?*<>', '---__...()')
     }
 
     transient String getIcon() {
