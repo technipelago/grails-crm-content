@@ -28,11 +28,13 @@ class CrmContentImportSpec extends grails.plugin.spock.IntegrationSpec {
         given: "create some files in src/templates/test-nnnnnnnn/html"
         def timestamp = System.currentTimeMillis()
         def folder = new File("./src/templates/test-${timestamp}/html")
+        def indexContent = "<html><head><title>Test</title></head><body><h1>Test</h1></body></html>"
+        def aboutContent = "<html><head><title>About</title></head><body><h1>Integration Test</h1></body></html>"
 
         when:
         folder.mkdirs()
-        new File(folder, "index.html") << "<html><head><title>Test</title></head><body><h1>Test</h1></body></html>"
-        new File(folder, "about.html") << "<html><head><title>About</title></head><body><h1>Integration Test</h1></body></html>"
+        new File(folder, "index.html") << indexContent
+        new File(folder, "about.html") << aboutContent
 
         then: "content folder html is empty"
         crmContentService.getFolder("html") == null
@@ -50,5 +52,7 @@ class CrmContentImportSpec extends grails.plugin.spock.IntegrationSpec {
 
         then: "files are stored in the html content folder"
         crmContentService.getFolder("html").files.size() == 2
+        crmContentService.getContentByPath("html/index.html").text == indexContent
+        crmContentService.getContentByPath("html/about.html").text == aboutContent
     }
 }
