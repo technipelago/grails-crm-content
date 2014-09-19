@@ -54,6 +54,17 @@ class CrmContentTagLibTests extends GroovyPagesTestCase {
         crmContentService.deleteFolder(folder)
     }
 
+    void testIterateAttachments() {
+        def folder = crmContentService.createFolder(null, "test", "Test folder", "This folder is used by integration tests", "")
+        crmContentService.createResource(new MockMultipartFile("file", "/tmp/test1.txt", "text/plain", "File 1".getBytes()), folder)
+        crmContentService.createResource(new MockMultipartFile("file", "/tmp/test2.txt", "text/plain", "File 2".getBytes()), folder).setTagValue('foo')
+        crmContentService.createResource(new MockMultipartFile("file", "/tmp/test3.txt", "text/plain", "File 3".getBytes()), folder).setTagValue('foo')
+        crmContentService.createResource(new MockMultipartFile("file", "/tmp/test4.txt", "text/plain", "File 4".getBytes()), folder).setTagValue('bar')
+        crmContentService.createResource(new MockMultipartFile("file", "/tmp/test5.txt", "text/plain", "File 5".getBytes()), folder)
+        def template = '<crm:attachments bean="\${bean}" tags="foo" var="file">[\${file.title}]</crm:attachments>'
+        assert applyTemplate(template, [bean: folder]) == '[test2][test3]'
+    }
+
     void testRenderTagWithResource() {
         // Empty password creates a public shared older.
         def folder = crmContentService.createFolder(null, "foo", "Test folder", "This folder is used by integration tests", "")

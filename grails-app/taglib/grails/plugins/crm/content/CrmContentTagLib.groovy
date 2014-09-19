@@ -310,4 +310,76 @@ class CrmContentTagLib {
         out << fam.icon(name: icon)
     }
 
+    /**
+     * Iterate over files attached to a domain instance and render tag body for each instance.
+     *
+     * @attr bean REQUIRED domain instance
+     * @attr type file extension filter, or "image" to filter on all image types.
+     * @attr tags comma separated list of tags to filter files with (prefix with ! to negate the filter)
+     * @attr var name of iteration variable (default = 'it')
+     * @attr status name of iteration index variable
+     */
+    def attachments = { attrs, body ->
+        def bean = attrs.bean
+        if (!bean) {
+            out << "Tag [attachments] missing required attribute [bean]"
+            return
+        }
+        List result = crmContentService.findResourcesByReference(bean, attrs)
+        def type = attrs.type
+        if (type) {
+            boolean rval = true
+            if (type[0] == '!') {
+                rval = false
+                type = type.substring(1)
+            }
+            switch (type) {
+                case 'image':
+                    result = result.findAll { isImage(it) ? rval : !rval }
+                    break
+                default:
+                    result = result.findAll { it.ext == type ? rval : !rval }
+                    break
+            }
+        }
+        def tags = attrs.tags?.toString()
+        if (tags) {
+            boolean rval = true
+            if (tags[0] == '!') {
+                rval = false
+                tags = tags.substring(1)
+            }
+            tags = tags.split(',').toList()*.trim()
+            Closure filter
+            if (tags.size() == 1) {
+                filter = { tag, obj ->
+                    obj.isTagged(tag) ? rval : !rval
+                }.curry(tags[0])
+            } else if (tags.size() > 1) {
+                filter = { list, obj ->
+                    for (t in list) {
+                        if (obj.isTagged(t)) {
+                            return rval
+                        }
+                    }
+                    !rval
+                }.curry(tags)
+            } else {
+                filter = { obj ->
+                    obj.getTagValue() ? rval : !rval
+                }
+            }
+            result = result.findAll { filter(it) }
+        }
+        def variableName = attrs.var ?: 'it'
+        int i = 0
+        for (r in result) {
+            Map map = [(variableName): r]
+            if(attrs.status) {
+                map.status = i
+            }
+            out << body(map)
+        }
+    }
+
 }
