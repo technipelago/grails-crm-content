@@ -193,7 +193,7 @@ class CrmContentTagLib {
         } else if (params.reference) {
             def r = crmContentService.findResourcesByReference(params.reference,
                     [status: params.statusFilter, title: params.titleFilter, name: params.nameFilter]).find {
-                isImage(it.name)
+                isImage(it)
             }
             if (r) {
                 out << """<img src="${createResourceLink(resource: r)}"${renderAttributes(attrs)}/>"""
@@ -201,9 +201,9 @@ class CrmContentTagLib {
         }
     }
 
-    private boolean isImage(String name) {
-        name = name.toLowerCase()
-        name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.gif')
+    private boolean isImage(CrmResourceRef file) {
+        def name = file.name.toLowerCase()
+        name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.gif')
     }
 
     private Map takeAttributes(Map takeFrom, List attributeNames) {
