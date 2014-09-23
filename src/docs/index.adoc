@@ -317,6 +317,65 @@ assert doc.text == "Hello World"
 
 TIP: You can look at the source code for the https://github.com/technipelago/grails-crm-content/tree/master/test/integration/grails/plugins/crm/content[integration tests^] to find more code examples.
 
+== Tag Library
+
+=== render
+
+The render tag renders content in the browser.
+
+[source,html]
+.frontpage.gsp
+----
+<div class="row-fluid">
+    <crm:render template="web/front/banner.html"/>
+</div>
+<div class="row-fluid">
+    <crm:render template="web/front/intro.html" parser="gsp"/> <1>
+</div>
+----
+<1> The content can optionally be parsed with `gsp` or `freemarker`.
+
+=== image
+
+The `image` tag generates markup to display a resource instance as an image.
+
+[source,groovy]
+.ImageController.groovy
+----
+class ImageController {
+    def crmContentService
+
+    def index(Long id) {
+        [file: crmContentService.getResourceRef(id)]
+    }
+}
+----
+
+[source,html]
+.index.gsp
+----
+<crm:image resource="${file}" class="img-polaroid" width="640"/>
+----
+
+=== attachments
+
+With the `attachments` tag you can iterate over resources attached to a domain instance.
+
+The following example displays a photo album of all images attached to a project that are tagged as *favorite*.
+The project domain instance is referenced with the `project` variable.
+
+[source,html]
+.project-album.gsp
+----
+<crm:attachments bean="${project}" var="file" type="image" tags="favorite"> <1> <2>
+    <g:link controller="crmContent" action="open" id="${file.id}" title="${file.title.encodeAsHTML()}" target="_blank">
+      <crm:image resource="${file}" width="64" class="img-polaroid" alt="${file.name.encodeAsHTML()}"/>
+    </g:link>
+</crm:attachments>
+----
+<1> The `type` attribute can be any file extension, or `image` that is a shorthand for (jpg, png, gif).
+<2> The tags attribute can be used to only include attachments that are tagged with a specific value
+
 == Configuration
 
 `crm.content.encryption.algorithm`
@@ -359,6 +418,7 @@ The FreeMarker service checks if templates has been updated with this interval (
 
 == Changes
 
+2.0.3:: Tag `attachments` added to the `crm` tag library
 2.0.2:: Grails tags are now supported when using the `crm:render` tag with option `parser="gsp"`. +
 Improved handling of illegal characters in file names. +
 CrmContentImportService#importFiles(...) now works on Windows.
