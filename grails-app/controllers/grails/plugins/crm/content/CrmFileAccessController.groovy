@@ -142,7 +142,8 @@ class CrmFileAccessController {
             status = SC_INTERNAL_SERVER_ERROR
         }
 
-        if (status == SC_OK) {
+        if (status >= 200 && status < 300) {
+            response.setStatus(status)
             RequestContextHolder.currentRequestAttributes().setRenderView(false)
         } else {
             if (log.isDebugEnabled()) {
