@@ -155,7 +155,7 @@ class CrmFileAccessController {
         return null
     }
 
-    private void cacheThis(HttpServletResponse response, int seconds, boolean shared = false) {
+    private void cacheThis(HttpServletResponse response, int seconds, boolean shared) {
         response.setHeader("Pragma", "")
         response.setHeader("Cache-Control", "${shared ? 'public' : 'private,no-store'},max-age=$seconds")
         Calendar cal = Calendar.getInstance()
