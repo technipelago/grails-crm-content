@@ -21,7 +21,7 @@ import org.springframework.mock.web.MockMultipartFile
 /**
  * Test folder functions.
  */
-class CrmFolderServiceSpec extends grails.plugin.spock.IntegrationSpec {
+class CrmFolderServiceSpec extends grails.test.spock.IntegrationSpec {
 
     def crmContentService
     def crmFolderService

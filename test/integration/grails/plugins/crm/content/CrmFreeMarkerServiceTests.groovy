@@ -12,7 +12,7 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
     def crmContentService
     def crmFreeMarkerService
 
-    def testFreeMarker() {
+    void testFreeMarker() {
 
         assert TenantUtils.withTenant(1L) {
             def folder = crmContentService.createFolders("/templates/freemarker")
@@ -28,7 +28,7 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
         } == "The quick brown fox jumps over the lazy dog"
     }
 
-    def testMessageDirectiveWithEnglishLocale() {
+    void testMessageDirectiveWithEnglishLocale() {
         assert TenantUtils.withTenant(1L) {
             def folder = crmContentService.createFolders("/templates/freemarker")
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/msg.html", "text/plain",
@@ -43,7 +43,7 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
         } == """Error in template: foo"""
     }
 
-    def testMessageDirectiveWithSwedishLocale() {
+    void testMessageDirectiveWithSwedishLocale() {
         assert TenantUtils.withTenant(1L) {
             def folder = crmContentService.createFolders("/templates/freemarker")
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/msg.html", "text/plain",
@@ -58,7 +58,7 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
         } == """FEL i mallen: foo"""
     }
 
-    def testResourceDirective() {
+    void testResourceDirective() {
         assert TenantUtils.withTenant(1L) {
             def folder = crmContentService.createFolders("/templates/freemarker")
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/album.html", "text/html",
@@ -73,7 +73,7 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
         } == """<img src="http://localhost:8080/crm-content/static/images/album/flower.jpg" alt="Flower"/>"""
     }
 
-    def testLinkDirectiveRelative() {
+    void testLinkDirectiveRelative() {
         assert TenantUtils.withTenant(1L) {
             def folder = crmContentService.createFolders("/templates/freemarker")
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/links1.html", "text/html",
@@ -88,7 +88,7 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
         } == """<a href="/crm-content/foo/bar/42">Test</a>"""
     }
 
-    def testLinkDirectiveAbsolute() {
+    void testLinkDirectiveAbsolute() {
         assert TenantUtils.withTenant(1L) {
             def folder = crmContentService.createFolders("/templates/freemarker")
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/links2.html", "text/html",
@@ -103,7 +103,7 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
         } == """<a href="http://localhost:8080/crm-content/foo/bar/42">Test</a>"""
     }
 
-    def testLinkDirectiveMapping() {
+    void testLinkDirectiveMapping() {
         assert TenantUtils.withTenant(1L) {
             def folder = crmContentService.createFolders("/templates/freemarker")
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/links3.html", "text/html",
@@ -118,7 +118,7 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
         } == """<a href="/crm-content/hej/hopp/42">Test</a>"""
     }
 
-    def testImageDirective() {
+    void testImageDirective() {
         assert TenantUtils.withTenant(1L) {
             def folder = crmContentService.createFolders("/templates/freemarker")
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/flowers.html", "text/html",
@@ -133,7 +133,7 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
         } == """<img src="http://localhost:8080/crm-content/static/images/album/flower.jpg" alt="Flower"/>"""
     }
 
-    def testXSSPrevention() {
+    void testXSSPrevention() {
         assert TenantUtils.withTenant(1L) {
             def folder = crmContentService.createFolders("/templates/freemarker")
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/hacker.html", "text/html",

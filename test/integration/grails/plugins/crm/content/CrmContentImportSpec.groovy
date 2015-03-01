@@ -19,7 +19,7 @@ package grails.plugins.crm.content
 /**
  * Test spec for CrmContentImportService.
  */
-class CrmContentImportSpec extends grails.plugin.spock.IntegrationSpec {
+class CrmContentImportSpec extends grails.test.spock.IntegrationSpec {
 
     def crmContentImportService
     def crmContentService

@@ -418,6 +418,7 @@ The FreeMarker service checks if templates has been updated with this interval (
 
 == Changes
 
+2.4.0:: Compatible with Grails 2.4.4
 2.0.3:: Tag `attachments` added to the `crm` tag library
 2.0.2:: Grails tags are now supported when using the `crm:render` tag with option `parser="gsp"`. +
 Improved handling of illegal characters in file names. +

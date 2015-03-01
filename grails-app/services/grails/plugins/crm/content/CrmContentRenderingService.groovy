@@ -18,7 +18,8 @@ package grails.plugins.crm.content
 
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.springframework.core.io.DescriptiveResource
+import org.springframework.core.io.Resource
+import org.springframework.core.io.InputStreamResource
 
 /**
  * Services for rendering content in different formats.
@@ -37,7 +38,6 @@ class CrmContentRenderingService {
      * @param model
      */
     private void renderGsp(CrmResourceRef template, Writer out, Map model) {
-        def res = new DescriptiveResource("crmResourceRef${template.hashCode()}")
         def classLoader = new GroovyClassLoader(grailsApplication.classLoader)
         def engine
         try {
@@ -53,8 +53,9 @@ class CrmContentRenderingService {
             }
             engine.setTagLibraryLookup(tagLibraryLookup)
             crmContentService.withInputStream(template.getResource()) { is ->
+                final Resource res = new InputStreamResource(is, "crmResourceRef${template.hashCode()}".toString())
                 engine.setClassLoader(classLoader)
-                engine.createTemplate(is, res, res.description).make(model).writeTo(out)
+                engine.createTemplate(res, true).make(model).writeTo(out)
             }
         } finally {
             engine?.clearPageCache()
