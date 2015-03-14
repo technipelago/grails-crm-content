@@ -116,4 +116,8 @@ Content can be shared with users of the application or shared publicly to the wo
         }
     }
 
+    private void addControllerMethods(config, mc, service) {
+        // Nothing yet.
+    }
+
 }
