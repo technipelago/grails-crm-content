@@ -21,7 +21,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile
 
 class CrmContentGrailsPlugin {
     def groupId = ""
-    def version = "2.0.4-SNAPSHOT"
+    def version = "2.0.4"
     def grailsVersion = "2.2 > *"
     def dependsOn = [:]
     def observe = ['controllers']
@@ -116,4 +116,7 @@ Content can be shared with users of the application or shared publicly to the wo
         }
     }
 
+    private void addControllerMethods(config, mc, service) {
+        // Nothing yet.
+    }
 }
