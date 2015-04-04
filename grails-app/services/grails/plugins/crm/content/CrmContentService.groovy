@@ -749,6 +749,9 @@ class CrmContentService {
     }
 
     def getContentByPath(String path, Long tenantId = TenantUtils.tenant) {
+        if(path == null) {
+            throw new IllegalArgumentException("CrmContentService#getContentByPath(String, Long) called with null path parameter")
+        }
         path = trimPath(path)
 
         def pathAsList = path.split(FILE_SEPARATOR_PATTERN).toList()
