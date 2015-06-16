@@ -68,7 +68,7 @@ class CrmContentTagLib {
             template = template.call()
         }
         def forcedTenant = attrs.tenant ? Long.valueOf(attrs.tenant) : 0L
-        def includeTenant = getTemplateTenant(request)
+        def includeTenant = forcedTenant ?: getTemplateTenant(request)
         def resourceList = []
         if (template instanceof CrmResourceRef) {
             resourceList << template
@@ -92,7 +92,7 @@ class CrmContentTagLib {
                 }
             }
             // Find out what tenant to use for template lookup.
-            def tenant = forcedTenant ?: includeTenant
+            def tenant = includeTenant
             def extensions = attrs.extensions
             def lang = (attrs.locale ?: (RequestContextUtils.getLocale(request) ?: Locale.default)).language
             def result
@@ -129,7 +129,7 @@ class CrmContentTagLib {
         // This can be disabled with the 'authorized' attribute.
         if (!attrs.authorized) {
             resourceList = resourceList.findAll {
-                (it.published && (it.tenantId == includeTenant || it.tenantId == forcedTenant)) || crmContentService.hasViewPermission(it, true)
+                (it.published && (it.tenantId == includeTenant)) || crmContentService.hasViewPermission(it, true)
             }
         }
 
