@@ -315,9 +315,14 @@ class CrmContentTagLib {
      *
      * @attr bean REQUIRED domain instance
      * @attr type file extension filter, or "image" to filter on all image types.
+     * @attr status filter attachments by status, see CrmResourceRef.STATUS_LIST for possible values.
+     * @attr title filter attachments by title, wildcards can be used.
+     * @attr name filter attachments by name, wildcards can be used.
      * @attr tags comma separated list of tags to filter files with (prefix with ! to negate the filter)
-     * @attr var name of iteration variable (default = 'it')
-     * @attr status name of iteration index variable
+     * @attr sort CrmResourceRef property to sort by (default = "name").
+     * @attr order sort order "asc" or "desc" (default = "asc")
+     * @attr var name of iteration variable (default = "it")
+     * @attr index name of iteration index variable
      */
     def attachments = { attrs, body ->
         def bean = attrs.bean
@@ -375,8 +380,8 @@ class CrmContentTagLib {
         int i = 0
         for (r in result) {
             Map map = [(variableName): r]
-            if(attrs.status) {
-                map.status = i
+            if(attrs.index) {
+                map[attrs.index] = i++
             }
             out << body(map)
         }

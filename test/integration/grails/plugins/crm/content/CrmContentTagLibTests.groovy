@@ -61,8 +61,8 @@ class CrmContentTagLibTests extends GroovyPagesTestCase {
         crmContentService.createResource(new MockMultipartFile("file", "/tmp/test3.txt", "text/plain", "File 3".getBytes()), folder).setTagValue('foo')
         crmContentService.createResource(new MockMultipartFile("file", "/tmp/test4.txt", "text/plain", "File 4".getBytes()), folder).setTagValue('bar')
         crmContentService.createResource(new MockMultipartFile("file", "/tmp/test5.txt", "text/plain", "File 5".getBytes()), folder)
-        def template = '<crm:attachments bean="\${bean}" tags="foo" var="file">[\${file.title}]</crm:attachments>'
-        assert applyTemplate(template, [bean: folder]) == '[test2][test3]'
+        def template = '<crm:attachments bean="\${bean}" tags="foo" var="file" index="idx">[\${idx}=\${file.title}]</crm:attachments>'
+        assert applyTemplate(template, [bean: folder]) == '[0=test2][1=test3]'
     }
 
     void testRenderTagWithResource() {
