@@ -27,7 +27,6 @@ class CrmContentImportService {
 
     def grailsApplication
     def crmContentService
-
     /**
      * Import files from file system.
      * @param folderName name of folder below 'src' or 'WEB-INF' where content will be imported from
@@ -35,6 +34,17 @@ class CrmContentImportService {
      * @return number of imported files
      */
     int importFiles(final String folderName, String username = null) {
+        importFiles(folderName, null, username)
+    }
+
+    /**
+     * Import files from file system.
+     * @param folderName name of folder below 'src' or 'WEB-INF' where content will be imported from
+     * @param root target folder
+     * @param username owner of imported content or null for current executing user
+     * @return number of imported files
+     */
+    int importFiles(final String folderName, final String root, final String username) {
         final String folderNameUnix = folderName ? StringUtils.replaceChars(folderName, '\\', '/') : null
         List<File> templates
         if (grailsApplication.warDeployed) {
@@ -59,14 +69,24 @@ class CrmContentImportService {
             }
         }
 
-        int counter = 0
+        String rootPath = null
+        if (root) {
+            rootPath = root.tr('\\/', File.separator + File.separator)
+            if (rootPath.endsWith(File.separator)) {
+                rootPath = rootPath.substring(0, rootPath.length() - 1)
+            }
+        }
 
+        int counter = 0
         if (templates) {
             final String folderNameNative = StringUtils.replaceChars(folderName, '\\/', File.separator + File.separator)
             for (file in templates.findAll { it.file && !it.hidden }) {
                 String path = StringUtils.substringAfter(file.parentFile.toString(), File.separator + folderNameNative) ?: null
                 if(!path) {
                     throw new IllegalArgumentException("Invalid folder [$folderNameNative]")
+                }
+                if(rootPath) {
+                    path = rootPath + path
                 }
                 def folder = crmContentService.getFolder(path)
                 if (!folder) {
