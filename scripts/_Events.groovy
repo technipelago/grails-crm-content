@@ -12,7 +12,7 @@ eventCreateWarStart = { warName, stagingDir ->
         def templatePath = new File(dir, 'src/templates/freemarker')
         if (templatePath.exists()) {
             println "Copying FreeMarker templates from $dir to war...\n"
-            ant.copy(todir: "${stagingDir}/WEB-INF/templates/freemarker") {
+            ant.copy(todir: "${stagingDir}/WEB-INF/templates/freemarker", overwrite: true) {
                 fileset(dir: templatePath, includes: "**/*.*")
             }
         }
@@ -20,7 +20,7 @@ eventCreateWarStart = { warName, stagingDir ->
         templatePath = new File(dir, 'src/templates/crm')
         if (templatePath.exists()) {
             println "Copying CRM templates from $dir to war...\n"
-            ant.copy(todir: "${stagingDir}/WEB-INF/templates/crm") {
+            ant.copy(todir: "${stagingDir}/WEB-INF/templates/crm", overwrite: true) {
                 fileset(dir: templatePath, includes: "**/*.*")
             }
         }
@@ -28,7 +28,7 @@ eventCreateWarStart = { warName, stagingDir ->
         templatePath = new File(dir, 'src/templates/text')
         if (templatePath.exists()) {
             println "Copying text templates from $dir to war...\n"
-            ant.copy(todir: "${stagingDir}/WEB-INF/templates/text") {
+            ant.copy(todir: "${stagingDir}/WEB-INF/templates/text", overwrite: true) {
                 fileset(dir: templatePath, includes: "**/*.*")
             }
         }
