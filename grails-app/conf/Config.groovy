@@ -44,9 +44,6 @@ grails.cache.config = {
     }
 }
 
-crm.content.encryption.algorithm = grails.plugins.crm.content.CrmFileResource.AES_ENCRYPTION
-crm.content.encryption.password = "dont tell anyone"
-
 grails.doc.authors = "Göran Ehrsson, Technipelago AB"
 grails.doc.license = "Licensed under the Apache License, Version 2.0 (the \"License\")"
 grails.doc.copyright = "Copyright 2014 Technipelago AB"
