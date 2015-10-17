@@ -1006,6 +1006,11 @@ class CrmContentService {
         return total
     }
 
+    /**
+     * Check all files in all available content repositories that they really exists.
+     * If no CrmResourceRef instance of found pointing to the file, the file will be deleted from the repository.
+     * @return number of bytes deleted
+     */
     long cleanup() {
         long size = 0L;
         for (p in crmContentProviderFactory.getProviders()) {
