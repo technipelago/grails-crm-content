@@ -51,5 +51,12 @@ class CrmFolderServiceSpec extends grails.test.spock.IntegrationSpec {
 
         then:
         backupFolder.files.size() == 3
+
+        when:
+        crmContentService.deleteFolder(folder)
+        crmContentService.deleteFolder(backupFolder)
+
+        then:
+        crmContentService.getFolder("importantStuff") == null
     }
 }

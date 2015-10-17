@@ -24,6 +24,8 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
             Writer out = new StringWriter()
 
             crmFreeMarkerService.process("/templates/freemarker/test.ftl", binding, out)
+            // Cleanup
+            crmContentService.deleteFolder(folder)
             return out.toString()
         } == "The quick brown fox jumps over the lazy dog"
     }
@@ -39,6 +41,8 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
             Writer out = new StringWriter()
 
             crmFreeMarkerService.process("/templates/freemarker/msg.html", binding, out)
+            // Cleanup
+            crmContentService.deleteFolder(folder)
             return out.toString()
         } == """Error in template: foo"""
     }
@@ -54,6 +58,8 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
             Writer out = new StringWriter()
 
             crmFreeMarkerService.process("/templates/freemarker/msg.html", binding, out)
+            // Cleanup
+            crmContentService.deleteFolder(folder)
             return out.toString()
         } == """FEL i mallen: foo"""
     }
@@ -69,6 +75,8 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
             Writer out = new StringWriter()
 
             crmFreeMarkerService.process("/templates/freemarker/album.html", binding, out)
+            // Cleanup
+            crmContentService.deleteFolder(folder)
             return out.toString()
         } == """<img src="http://localhost:8080/crm-content/static/images/album/flower.jpg" alt="Flower"/>"""
     }
@@ -84,6 +92,8 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
             Writer out = new StringWriter()
 
             crmFreeMarkerService.process("/templates/freemarker/links1.html", binding, out)
+            // Cleanup
+            crmContentService.deleteFolder(folder)
             return out.toString()
         } == """<a href="/crm-content/foo/bar/42">Test</a>"""
     }
@@ -99,6 +109,8 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
             Writer out = new StringWriter()
 
             crmFreeMarkerService.process("/templates/freemarker/links2.html", binding, out)
+            // Cleanup
+            crmContentService.deleteFolder(folder)
             return out.toString()
         } == """<a href="http://localhost:8080/crm-content/foo/bar/42">Test</a>"""
     }
@@ -114,6 +126,8 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
             Writer out = new StringWriter()
 
             crmFreeMarkerService.process("/templates/freemarker/links3.html", binding, out)
+            // Cleanup
+            crmContentService.deleteFolder(folder)
             return out.toString()
         } == """<a href="/crm-content/hej/hopp/42">Test</a>"""
     }
@@ -129,6 +143,8 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
             Writer out = new StringWriter()
 
             crmFreeMarkerService.process("/templates/freemarker/flowers.html", binding, out)
+            // Cleanup
+            crmContentService.deleteFolder(folder)
             return out.toString()
         } == """<img src="http://localhost:8080/crm-content/static/images/album/flower.jpg" alt="Flower"/>"""
     }
@@ -144,6 +160,8 @@ class CrmFreeMarkerServiceTests extends GroovyPagesTestCase {
             Writer out = new StringWriter()
 
             crmFreeMarkerService.process("/templates/freemarker/hacker.html", binding, out)
+            // Cleanup
+            crmContentService.deleteFolder(folder)
             return out.toString()
         } == """<img src="http://localhost:8080/crm-content/static/images/flower.jpg&quot;/&gt;&lt;script&gt;alert(&#39;Gotcha!&#39;)&lt;/script&gt;"/>"""
     }

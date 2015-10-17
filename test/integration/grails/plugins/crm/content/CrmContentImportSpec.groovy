@@ -54,5 +54,13 @@ class CrmContentImportSpec extends grails.test.spock.IntegrationSpec {
         crmContentService.getFolder("html").files.size() == 2
         crmContentService.getContentByPath("html/index.html").text == indexContent
         crmContentService.getContentByPath("html/about.html").text == aboutContent
+
+        when: "cleanup"
+        crmContentService.deleteFolder(crmContentService.getFolder("html"))
+
+        then:
+        crmContentService.getFolder("html") == null
+        crmContentService.getContentByPath("html/index.html") == null
+        crmContentService.getContentByPath("html/about.html") == null
     }
 }

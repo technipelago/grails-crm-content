@@ -63,6 +63,9 @@ class CrmContentTagLibTests extends GroovyPagesTestCase {
         crmContentService.createResource(new MockMultipartFile("file", "/tmp/test5.txt", "text/plain", "File 5".getBytes()), folder)
         def template = '<crm:attachments bean="\${bean}" tags="foo" var="file" index="idx">[\${idx}=\${file.title}]</crm:attachments>'
         assert applyTemplate(template, [bean: folder]) == '[0=test2][1=test3]'
+
+        // Cleanup.
+        crmContentService.deleteFolder(folder)
     }
 
     void testRenderTagWithResource() {
@@ -149,7 +152,6 @@ class CrmContentTagLibTests extends GroovyPagesTestCase {
         assert applyTemplate('<crm:render template="/bar" parser="raw" max="0"/>') == "12345"
         def result = applyTemplate('<crm:render template="/bar" parser="raw" max="3" random="true"/>')
         assert result.length() == 3
-        assert result != "123" // TODO This test could fail if the random result equals original.
 
         // Cleanup.
         crmContentService.deleteFolder(folder)

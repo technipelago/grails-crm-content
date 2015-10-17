@@ -60,11 +60,11 @@ class CrmContentServiceTests extends GroovyTestCase {
 
     void testResourceFolder() {
         crmContentService.createFolder(null, "pub")
-        def folder = crmContentService.getFolder("pub", 0)
-        assert folder != null
-        assert folder.name == "pub"
-        crmContentService.createFolder(folder, "grails")
-        folder = crmContentService.getFolder("pub/grails", 0)
+        def root = crmContentService.getFolder("pub", 0)
+        assert root != null
+        assert root.name == "pub"
+        crmContentService.createFolder(root, "grails")
+        def folder = crmContentService.getFolder("pub/grails", 0)
         assert folder != null
         assert folder.name == "grails"
         crmContentService.createFolder(folder, "2.0.3")
@@ -78,6 +78,9 @@ class CrmContentServiceTests extends GroovyTestCase {
         assert crmContentService.getFolder("pub/grails/2.0.3/", 0)?.name == "2.0.3"
         // Test Windows paths
         assert crmContentService.getFolder("pub\\grails\\2.0.3", 0)?.name == "2.0.3"
+
+        // Cleanup
+        crmContentService.deleteFolder(root)
     }
 
     void testCreateFolders() {
@@ -119,6 +122,9 @@ class CrmContentServiceTests extends GroovyTestCase {
         crmContentService.deleteFolder(folder)
         assert crmContentService.getFolder("/multiple/folders/to/") == null
         assert crmContentService.getFolder("/multiple/folders")?.name == "folders"
+
+        // Cleanup
+        crmContentService.deleteFolder(crmContentService.getFolder("/multiple"))
     }
 
     void testResourceFolderMetadata() {
@@ -193,6 +199,9 @@ class CrmContentServiceTests extends GroovyTestCase {
             ref.writeTo(out)
         }
         assert file.text == "Read Me"
+
+        // Cleanup
+        crmContentService.deleteReference(ref)
     }
 
     void testReader() {
@@ -208,6 +217,9 @@ class CrmContentServiceTests extends GroovyTestCase {
             }
         }
         assert file.text == "The quick brown fox jumps over the lazy dog"
+
+        // Cleanup
+        crmContentService.deleteReference(ref)
     }
 
     void testMetadata() {
@@ -243,26 +255,32 @@ class CrmContentServiceTests extends GroovyTestCase {
     void testEncryptedStorage() {
         // Configure AES encryption.
         grailsApplication.config.crm.content.encryption.algorithm = CrmFileResource.AES_ENCRYPTION
-        def entity = new TestContentEntity(name: "Secret").save(failOnError: true, flush: true)
-        def secretMessage = "This is the secret message"
-        def ref = crmContentService.createResource(new MockMultipartFile("file", "/tmp/test1.txt", "text/plain", secretMessage.getBytes("UTF-8")), entity)
-        def md = ref.metadata
-        // Make sure metadata says it's encrypted
-        assert md.encrypted == CrmFileResource.AES_ENCRYPTION
-        def resource = CrmFileResource.get(ref.resource.path.substring(1))
-        assert resource != null
-        def file = resource.getRawFile()
-        assert md.bytes == 26
-        assert file.length() == 32
-        assert file.text != secretMessage
+        grailsApplication.config.crm.content.encryption.password = "dont tell anyone"
+        try {
+            def entity = new TestContentEntity(name: "Secret").save(failOnError: true, flush: true)
+            def secretMessage = "This is the secret message"
+            def ref = crmContentService.createResource(new MockMultipartFile("file", "/tmp/test1.txt", "text/plain", secretMessage.getBytes("UTF-8")), entity)
+            def md = ref.metadata
+            // Make sure metadata says it's encrypted
+            assert md.encrypted == CrmFileResource.AES_ENCRYPTION
+            def resource = CrmFileResource.get(ref.resource.path.substring(1))
+            assert resource != null
+            def file = resource.getRawFile()
+            assert md.bytes == 26
+            assert file.length() == 32
+            assert file.text != secretMessage
 
-        def baos = new ByteArrayOutputStream()
-        def bytesWritten = ref.writeTo(baos)
-        assert bytesWritten == 26
-        assert baos.toString() == secretMessage
+            def baos = new ByteArrayOutputStream()
+            def bytesWritten = ref.writeTo(baos)
+            assert bytesWritten == 26
+            assert baos.toString() == secretMessage
 
-        assert crmContentService.deleteAllResources(entity) == 1
-        entity.delete()
+            // Cleanup
+            assert crmContentService.deleteAllResources(entity) == 1
+            entity.delete()
+        } finally {
+            grailsApplication.config.crm.content.encryption.algorithm = null
+        }
     }
 
     void testCreateOverwriteResource() {
@@ -278,6 +296,10 @@ class CrmContentServiceTests extends GroovyTestCase {
         ref2.writeTo(result)
         def s = new String(result.toByteArray())
         assert s == "This is an updated test"
+
+        // Cleanup
+        assert crmContentService.deleteAllResources(entity) == 1
+        entity.delete()
     }
 
     void testOverwriteWithEmptyResource() {
@@ -293,6 +315,10 @@ class CrmContentServiceTests extends GroovyTestCase {
         ref2.writeTo(result)
         def s = new String(result.toByteArray())
         assert s == ""
+
+        // Cleanup
+        assert crmContentService.deleteAllResources(entity) == 1
+        entity.delete()
     }
 
     void testCreateDuplicateResource() {
@@ -308,6 +334,10 @@ class CrmContentServiceTests extends GroovyTestCase {
         ref2.writeTo(result)
         def s = new String(result.toByteArray())
         assert s == "This is an updated test"
+
+        // Cleanup
+        assert crmContentService.deleteAllResources(entity) == 2
+        entity.delete()
     }
 
     void testUpdateContent() {
@@ -324,6 +354,10 @@ class CrmContentServiceTests extends GroovyTestCase {
         ref1.writeTo(result)
         def s = new String(result.toByteArray())
         assert s == "This is an updated test"
+
+        // Cleanup
+        assert crmContentService.deleteAllResources(entity) == 1
+        entity.delete()
     }
 
     void testUpdateContentWithNoData() {
@@ -340,6 +374,10 @@ class CrmContentServiceTests extends GroovyTestCase {
         ref1.writeTo(result)
         def s = new String(result.toByteArray())
         assert s == ""
+
+        // Cleanup
+        assert crmContentService.deleteAllResources(entity) == 1
+        entity.delete()
     }
 
     void testCopyResource() {
@@ -404,12 +442,16 @@ class CrmContentServiceTests extends GroovyTestCase {
     }
 
     void testResourceUsage() {
-        TenantUtils.withTenant(50) {
+        Long tenant = 50L
+        TenantUtils.withTenant(tenant) {
             def folder = crmContentService.createFolder(null, "myfolder")
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/test1.txt", "text/plain", "This is the first file".getBytes("UTF-8")), folder)
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/test2.txt", "text/plain", "This is the second file".getBytes("UTF-8")), folder)
             crmContentService.createResource(new MockMultipartFile("file", "/tmp/test3.txt", "text/plain", "This is the third file".getBytes("UTF-8")), folder)
         }
-        assert crmContentService.getResourceUsage(50) == 67
+        assert crmContentService.getResourceUsage(tenant) == 67
+
+        // Cleanup
+        crmContentService.deleteFolder(crmContentService.getFolder("myfolder", tenant))
     }
 }
