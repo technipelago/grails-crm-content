@@ -17,6 +17,7 @@
 package grails.plugins.crm.content;
 
 import java.net.URI;
+import java.util.List;
 
 /**
  * Factory interface for access to content providers.
@@ -39,4 +40,6 @@ public interface CrmContentProviderFactory {
      * @return provide instance that can retrieve content from the specified URI
      */
     CrmContentProvider getProvider(URI resourceURI);
+
+    List<CrmContentProvider> getProviders();
 }

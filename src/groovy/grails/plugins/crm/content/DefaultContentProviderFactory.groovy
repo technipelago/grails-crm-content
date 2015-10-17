@@ -31,10 +31,12 @@ class DefaultContentProviderFactory implements CrmContentProviderFactory {
      * @param reference
      * @return content provider instance
      */
+    @Override
     CrmContentProvider getProvider(String filename, long length, Object reference, String username) {
         return crmContentProvider
     }
 
+    @Override
     CrmContentProvider getProvider(URI resourceURI) {
         if(resourceURI.scheme == 'file') {
             return crmContentProvider
@@ -42,4 +44,8 @@ class DefaultContentProviderFactory implements CrmContentProviderFactory {
         return null
     }
 
+    @Override
+    List<CrmContentProvider> getProviders() {
+        [crmContentProvider]
+    }
 }
