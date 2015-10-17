@@ -40,7 +40,7 @@ class CrmFileResource {
     static mapping = {
         cache usage: 'read-write'
     }
-    static transients = ['reader', 'md5']
+    static transients = ['contentRoot', 'reader', 'md5']
 
     def afterDelete() {
         File f = getRawFile()
@@ -51,6 +51,10 @@ class CrmFileResource {
 
     def afterUpdate() {
         hash = getMD5()
+    }
+
+    protected File getContentRoot() {
+        new File(domainClass.grailsApplication.config.crm.content.file.path ?: 'content-repository')
     }
 
     // Lazy injection of service.
@@ -71,7 +75,7 @@ class CrmFileResource {
      * @return the file
      */
     private File getRawFile() {
-        new File(domainClass.grailsApplication.config.crm.content.file.path ?: '.', getPath())
+        new File(getContentRoot(), getPath())
     }
 
     private File getFile() {

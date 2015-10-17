@@ -18,6 +18,8 @@ package grails.plugins.crm.content;
 
 
 import groovy.lang.Closure;
+import groovy.transform.stc.ClosureParams;
+import groovy.transform.stc.SimpleType;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,7 +56,7 @@ public interface CrmContentProvider {
     /**
      * Returns a Reader prepared to read content from this resource.
      *
-     * @param uri resource identifier
+     * @param uri         resource identifier
      * @param charsetName
      * @return Reader for this resource
      */
@@ -76,7 +78,7 @@ public interface CrmContentProvider {
      * @param work the closure to call with input stream as parameter
      * @return what the closure returns
      */
-    Object withInputStream(URI uri, Closure work);
+    Object withInputStream(URI uri, @ClosureParams(value = SimpleType.class, options = "java.io.InputStream") Closure work);
 
     /**
      * Copy a resource.
@@ -118,4 +120,15 @@ public interface CrmContentProvider {
      * @return milliseconds since 1 January 1970
      */
     long getLastModified(URI uri);
+
+    /**
+     * Check every file in the repository.
+     * The specified closure will be called for every file in the repository.
+     * If the closure returns true the file's size will be included in the total size returned by this method.
+     * Example: long totalSize = check({true})
+     *
+     * @param worker a closure that will be called for every file in the repository
+     * @return total size (in byte) of all file checked with a positive result from the worker closure.
+     */
+    long check(@ClosureParams(value = SimpleType.class, options = "java.net.URI") Closure<Boolean> worker);
 }

@@ -15,18 +15,19 @@
  */
 package grails.plugins.crm.content
 
+import grails.events.Listener
 import grails.plugin.cache.CacheEvict
 import grails.plugin.cache.Cacheable
 import grails.plugins.crm.core.CrmCoreService
-import grails.plugins.crm.core.TenantUtils
 import grails.plugins.crm.core.PagedResultList
 import grails.plugins.crm.core.SearchUtils
+import grails.plugins.crm.core.TenantUtils
 import grails.plugins.selection.Selectable
 import grails.util.GrailsNameUtils
-import grails.events.Listener
 import groovy.transform.CompileStatic
-import org.springframework.web.multipart.MultipartFile
 import org.apache.commons.io.FilenameUtils
+import org.springframework.web.multipart.MultipartFile
+
 import java.util.regex.Pattern
 
 class CrmContentService {
@@ -139,7 +140,7 @@ class CrmContentService {
                     ilike('name', nameQuery)
                     ilike('title', nameQuery)
                 }
-            } else if(! query.tags) {
+            } else if (!query.tags) {
                 isNull('parent')
             }
         }
@@ -154,7 +155,7 @@ class CrmContentService {
                     inList('id', taggedFiles)
                 }
                 like('ref', GrailsNameUtils.getPropertyName(CrmResourceFolder) + '@%')
-                if(nameQuery) {
+                if (nameQuery) {
                     or {
                         ilike('name', nameQuery)
                         ilike('title', nameQuery)
@@ -192,7 +193,7 @@ class CrmContentService {
      * @return true if user has permission to view content, false otherwise
      */
     boolean hasViewPermission(CrmResourceRef ref, boolean authenticated = false) {
-        if(ref.shared) {
+        if (ref.shared) {
             return true
         }
         if (ref.published && (ref.tenantId == TenantUtils.tenant) && authenticated) {
@@ -237,7 +238,7 @@ class CrmContentService {
                 eq('name', normalizedName)
                 eq('ref', referenceIdentifier)
             }
-            if(! contentType) {
+            if (!contentType) {
                 contentType = guessContentType(name)
             }
             if (resource) {
@@ -500,7 +501,7 @@ class CrmContentService {
             throw new IllegalArgumentException("No content provider found for [$resource]")
         }
         Map<String, Object> md = provider.getMetadata(resource)
-        md.icon = getContentIcon((String)md.contentType)
+        md.icon = getContentIcon((String) md.contentType)
         return md
     }
 
@@ -539,7 +540,7 @@ class CrmContentService {
         def result = CrmResourceRef.createCriteria().list(params) {
             eq('ref', ident)
             if (params.status) {
-                if(params.status instanceof Collection) {
+                if (params.status instanceof Collection) {
                     inList('status', params.status)
                 } else {
                     eq('status', params.status)
@@ -717,7 +718,7 @@ class CrmContentService {
     CrmResourceFolder createFolders(String path) {
         def parts = FilenameUtils.normalize(trimPath(path)).split(FILE_SEPARATOR_PATTERN)
         def folder
-        if(parts) {
+        if (parts) {
             for (part in parts) {
                 folder = createFolder(folder, part)
             }
@@ -749,7 +750,7 @@ class CrmContentService {
     }
 
     def getContentByPath(String path, Long tenantId = TenantUtils.tenant) {
-        if(path == null) {
+        if (path == null) {
             throw new IllegalArgumentException("CrmContentService#getContentByPath(String, Long) called with null path parameter")
         }
         path = trimPath(path)
@@ -912,37 +913,37 @@ class CrmContentService {
     }
 
     public static final Map<String, String> mimeTypeIconMap = [
-            'text': 'page_white_text',
-            'image': 'image',
-            'video': 'film',
-            'audio': 'cd',
-            'message': 'email',
-            'application/pdf': 'page_white_acrobat',
-            'application/zip': 'page_white_compressed',
-            'application/javascript': 'page_white_code',
-            'application/json': 'page_white_code',
-            'application/rtf': 'page_white_text',
-            'application/msword': 'page_white_word',
-            'application/vnd.ms-excel': 'page_white_excel',
-            'application/vnd.ms-powerpoint': 'page_white_powerpoint',
-            'application/vnd.ms-project': 'page_white_office',
-            'application/vnd.oasis.opendocument.chart': 'chart_line',
-            'application/vnd.oasis.opendocument.chart-template': 'chart_line',
-            'application/vnd.oasis.opendocument.database': 'database',
-            'application/vnd.oasis.opendocument.formula': 'sum',
-            'application/vnd.oasis.opendocument.formula-template': 'sum',
-            'application/vnd.oasis.opendocument.graphics': 'image',
-            'application/vnd.oasis.opendocument.graphics-template': 'image',
-            'application/vnd.oasis.opendocument.image': 'image',
-            'application/vnd.oasis.opendocument.image-template': 'image',
-            'application/vnd.oasis.opendocument.presentation': 'page_white_powerpoint',
+            'text'                                                    : 'page_white_text',
+            'image'                                                   : 'image',
+            'video'                                                   : 'film',
+            'audio'                                                   : 'cd',
+            'message'                                                 : 'email',
+            'application/pdf'                                         : 'page_white_acrobat',
+            'application/zip'                                         : 'page_white_compressed',
+            'application/javascript'                                  : 'page_white_code',
+            'application/json'                                        : 'page_white_code',
+            'application/rtf'                                         : 'page_white_text',
+            'application/msword'                                      : 'page_white_word',
+            'application/vnd.ms-excel'                                : 'page_white_excel',
+            'application/vnd.ms-powerpoint'                           : 'page_white_powerpoint',
+            'application/vnd.ms-project'                              : 'page_white_office',
+            'application/vnd.oasis.opendocument.chart'                : 'chart_line',
+            'application/vnd.oasis.opendocument.chart-template'       : 'chart_line',
+            'application/vnd.oasis.opendocument.database'             : 'database',
+            'application/vnd.oasis.opendocument.formula'              : 'sum',
+            'application/vnd.oasis.opendocument.formula-template'     : 'sum',
+            'application/vnd.oasis.opendocument.graphics'             : 'image',
+            'application/vnd.oasis.opendocument.graphics-template'    : 'image',
+            'application/vnd.oasis.opendocument.image'                : 'image',
+            'application/vnd.oasis.opendocument.image-template'       : 'image',
+            'application/vnd.oasis.opendocument.presentation'         : 'page_white_powerpoint',
             'application/vnd.oasis.opendocument.presentation-template': 'page_white_powerpoint',
-            'application/vnd.oasis.opendocument.spreadsheet': 'page_white_excel',
-            'application/vnd.oasis.opendocument.spreadsheet-template': 'page_white_excel',
-            'application/vnd.oasis.opendocument.text': 'page_white_text',
-            'application/vnd.oasis.opendocument.text-master': 'page_white_text',
-            'application/vnd.oasis.opendocument.text-template': 'page_white_text',
-            'application/vnd.oasis.opendocument.text-web': 'page_white_world'
+            'application/vnd.oasis.opendocument.spreadsheet'          : 'page_white_excel',
+            'application/vnd.oasis.opendocument.spreadsheet-template' : 'page_white_excel',
+            'application/vnd.oasis.opendocument.text'                 : 'page_white_text',
+            'application/vnd.oasis.opendocument.text-master'          : 'page_white_text',
+            'application/vnd.oasis.opendocument.text-template'        : 'page_white_text',
+            'application/vnd.oasis.opendocument.text-web'             : 'page_white_world'
     ]
 
     /**
@@ -1003,5 +1004,22 @@ class CrmContentService {
             }
         }
         return total
+    }
+
+    long cleanup() {
+        long size = 0L;
+        for (p in crmContentProviderFactory.getProviders()) {
+            size += p.check({ URI uri ->
+                boolean rval
+                try {
+                    getLength(uri) // Throws exception if no CrmResourceRef instance is found.
+                } catch (IllegalArgumentException e) {
+                    delete(uri)
+                    rval = true
+                }
+                return rval
+            })
+        }
+        return size;
     }
 }
