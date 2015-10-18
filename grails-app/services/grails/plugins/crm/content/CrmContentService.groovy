@@ -1015,12 +1015,9 @@ class CrmContentService {
         long size = 0L;
         for (p in crmContentProviderFactory.getProviders()) {
             size += p.check({ URI uri ->
-                boolean rval
-                try {
-                    getLength(uri) // Throws exception if no CrmResourceRef instance is found.
-                } catch (IllegalArgumentException e) {
-                    delete(uri)
-                    rval = true
+                boolean rval = false
+                if(CrmResourceRef.countByRes(uri.toString()) == 0) {
+                    rval = delete(uri) // No one is refering to this file, remove it!
                 }
                 return rval
             })

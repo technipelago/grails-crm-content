@@ -127,15 +127,20 @@ class CrmFileContentProvider implements CrmContentProvider {
     boolean delete(URI uri) {
         def resource = CrmFileResource.get(uri.path.substring(1))
         if (resource) {
-            resource.delete(flush: true)
+            resource.delete(flush: true) // This will delete the physical file.
             return true
         }
+        // If no CrmFileResource was found, try to delete the orphan file.
         File file = getFile(uri)
         if (file.exists() && !file.isDirectory()) {
             file.delete()
             return true
         }
         return false
+    }
+
+    private URI getUri(Long id) {
+        new URI("$scheme://$host/$id")
     }
 
     // TODO duplicated code, part of it also appear in CrmFileResource.groovy
@@ -207,7 +212,7 @@ class CrmFileContentProvider implements CrmContentProvider {
     @CompileStatic
     private Map<String, Object> getMetadataForResource(CrmFileResource resource) {
         def md = [:]
-        md.uri = new URI("$scheme://$host/$resource.id")
+        md.uri = getUri(resource.id)
         md.contentType = resource.contentType
         md.bytes = resource.length
         md['size'] = WebUtils.bytesFormatted(resource.length)

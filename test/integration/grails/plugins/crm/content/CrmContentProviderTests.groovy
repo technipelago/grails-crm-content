@@ -50,13 +50,21 @@ class CrmContentProviderTests extends GroovyTestCase {
     }
 
     void test4ReclaimSpace() {
+        def folder = crmContentService.createFolder(null, "test")
+        crmContentService.createResource("Test!", "test.txt", folder)
+
         assert crmContentService.getContentByPath("/hello/hello.txt") == null
         assert crmContentService.cleanup() == 12 // "Hello World!"
 
         def providers = crmContentProviderFactory.getProviders()
         assert providers.size() > 0
         for (p in providers) {
-            assert p.check({ true }) == 0 // Should be zero if the test above removed all orphan files
+            assert p.check({ true }) == 5 // "Test!"
+        }
+
+        crmContentService.deleteFolder(folder)
+        for (p in providers) {
+            assert p.check({ true }) == 0 // Should be zero if all test files are removed
         }
     }
 }
