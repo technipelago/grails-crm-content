@@ -218,19 +218,19 @@ class CrmContentService {
         if (reference == null) {
             throw new IllegalArgumentException("Parameter [reference] cannot be null")
         }
-        def referenceIsDomain = crmCoreService.isDomainClass(reference)
+        boolean referenceIsDomain = crmCoreService.isDomainClass(reference)
         if (referenceIsDomain && !reference.ident()) {
             throw new RuntimeException(
                     "You must save the domain instance [$reference] before calling createResource")
         }
-        def title = params.title ?: FilenameUtils.getBaseName(filename)
-        def name = params.name ?: FilenameUtils.getName(filename)
-        def normalizedName = CrmResourceRef.normalizeName(name)
-        def username = params.username ?: crmSecurityService.currentUser?.username
-        def provider = crmContentProviderFactory.getProvider(normalizedName, length, reference, username)
-        def referenceIdentifier = crmCoreService.getReferenceIdentifier(reference)
+        String title = params.title ?: FilenameUtils.getBaseName(filename)
+        String name = params.name ?: FilenameUtils.getName(filename)
+        String normalizedName = CrmResourceRef.normalizeName(name)
+        String username = params.username ?: crmSecurityService.currentUser?.username
+        CrmContentProvider provider = crmContentProviderFactory.getProvider(normalizedName, length, reference, username)
+        String referenceIdentifier = crmCoreService.getReferenceIdentifier(reference)
         def tenant = TenantUtils.tenant
-        def resource
+        CrmResourceRef resource
         def uri
         try {
             resource = CrmResourceRef.createCriteria().get() {
@@ -247,6 +247,14 @@ class CrmContentService {
                 // Immutable resources sounds more clean, but I'm not sure yet. Needs more thinking.
                 if (params.overwrite) {
                     provider.update(resource.resource, inputStream, contentType)
+                    // New title supplied?
+                    if(params.title) {
+                        resource.title = params.title
+                    }
+                    // New description supplied?
+                    if(params.description) {
+                        resource.description = params.description
+                    }
                 } else {
                     def metadata = provider.create(inputStream, contentType, normalizedName, username)
                     uri = metadata.uri
