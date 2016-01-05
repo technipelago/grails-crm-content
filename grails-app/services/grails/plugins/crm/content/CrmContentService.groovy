@@ -644,7 +644,8 @@ class CrmContentService {
         if (CrmResourceRef.countByRes(res) == 0) {
             log.debug "Deleting [${resourceRef.name}] and it's resource"
             boolean deleted = provider.delete(resource)
-            event(for: "crmContent", topic: "deleted", data: [tenant: resourceRef.tenantId, id: resourceRef.id, name: resourceRef.name])
+            String username = crmSecurityService.currentUser?.username
+            event(for: "crmContent", topic: "deleted", data: [tenant: resourceRef.tenantId, id: resourceRef.id, name: resourceRef.name, user: username])
             return deleted
         }
         log.debug "Deleted resource [${resourceRef.name}] but other references exists"
