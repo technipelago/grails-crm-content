@@ -418,6 +418,8 @@ The FreeMarker service checks if templates has been updated with this interval (
 
 == Changes
 
+2.4.2:: You can now specify destination root folder when importing content with CrmContentImportService
+2.4.1:: Fix for template rendering with specific tenant
 2.4.0:: Compatible with Grails 2.4.4
 2.0.4:: Fixed class reloading bug caused by missing method `addControllerMethods()` in plugin descriptor.
 2.0.3:: Tag `attachments` added to the `crm` tag library
