@@ -54,8 +54,10 @@ Content can be shared with users of the application or shared publicly to the wo
             crmContentProvider = fcp
         }
 
-        freeMarkerTemplateLoader(CrmContentTemplateLoader) {
-            crmContentService = ref("crmContentService")
+        // One template loader is (lazy) created for each tenant, therefore it must be prototype scoped.
+        freeMarkerTemplateLoader(CrmContentTemplateLoader) { bean ->
+            bean.scope = 'prototype'
+            bean.autowire = 'byName'
         }
     }
 

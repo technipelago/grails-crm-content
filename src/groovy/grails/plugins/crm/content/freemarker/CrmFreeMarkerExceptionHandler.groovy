@@ -31,7 +31,7 @@ class CrmFreeMarkerExceptionHandler implements TemplateExceptionHandler {
             if (grails.util.Environment.developmentMode) {
                 out.write("[ERROR: " + te.getMessage() + "]")
             } else {
-                out.write("[ERROR in template: " + env.getTemplate().getName() + "]")
+                out.write("[ERROR in template: " + env.getCurrentTemplate().getName() + "]")
             }
         } catch (IOException e) {
             throw new TemplateException("Failed to print error message. Cause: " + e, env)

@@ -19,9 +19,9 @@ package grails.plugins.crm.content.freemarker
 import freemarker.cache.CacheStorage
 import freemarker.cache.TemplateLoader
 import freemarker.template.Configuration
-import freemarker.template.ObjectWrapper
 import freemarker.template.SimpleNumber
 import freemarker.template.Template
+import freemarker.template.Version
 import grails.events.Listener
 import grails.plugins.crm.content.CrmResourceRef
 import grails.plugins.crm.core.TenantUtils
@@ -31,20 +31,21 @@ import grails.plugins.crm.core.TenantUtils
  */
 class CrmFreeMarkerService {
 
+    public static final Version FREEMARKER_FEATURE_LEVEL = new Version(2, 3, 21)
+
     def grailsApplication
     def crmCoreService
     def crmContentService
-    def freeMarkerTemplateLoader
 
     private Map<Long, Configuration> configurations = [:].withDefault { tenant ->
         def grailsConfig = grailsApplication.config.crm.content.freemarker.template
-        def cfg = new CrmFreeMarkerConfiguration(tenant)
+        def cfg = new Configuration(FREEMARKER_FEATURE_LEVEL)
 
         // Set to 0-60 for debugging and higher value in production environment.
-        cfg.setTemplateUpdateDelay(grailsConfig.updateDelay ?: 60)
+        cfg.setTemplateUpdateDelayMilliseconds((grailsConfig.updateDelay ?: 60) * 1000)
 
         // Use beans wrapper (recommended for most applications)
-        cfg.setObjectWrapper(ObjectWrapper.BEANS_WRAPPER)
+        //cfg.setObjectWrapper(ObjectWrapper.DEFAULT_WRAPPER)
 
         // Set the default charset of the template files
         cfg.setDefaultEncoding(grailsConfig.defaultEncoding ?: "UTF-8")
@@ -56,7 +57,8 @@ class CrmFreeMarkerService {
 
         //cfg.setLocalizedLookup(false)
 
-        cfg.setTemplateLoader(freeMarkerTemplateLoader)
+        def templateLoader = grailsApplication.mainContext.getBean('freeMarkerTemplateLoader', tenant)
+        cfg.setTemplateLoader(templateLoader)
 
         // Set an exception handler that does not print the stack trace in production.
         cfg.setTemplateExceptionHandler(new CrmFreeMarkerExceptionHandler())
@@ -110,7 +112,7 @@ class CrmFreeMarkerService {
         if (tenant == null) {
             return false
         }
-        if(TenantUtils.withTenant(tenant) {
+        if (TenantUtils.withTenant(tenant) {
             def cfg = configurations.get(tenant)
             TemplateLoader loader = cfg.getTemplateLoader()
             Object templateSource = loader.findTemplateSource(name)

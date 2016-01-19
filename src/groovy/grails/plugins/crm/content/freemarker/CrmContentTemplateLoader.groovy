@@ -15,36 +15,52 @@
  */
 
 
-
 package grails.plugins.crm.content.freemarker
 
 import freemarker.cache.TemplateLoader
 import grails.plugins.crm.content.CrmResourceRef
+import grails.plugins.crm.core.TenantUtils
 
 /**
- * FreeMarker Template Loader that load content from Grails CRM database.
+ * FreeMarker Template Loader that load content from GR8 CRM database.
  */
 class CrmContentTemplateLoader implements TemplateLoader {
 
+    private final long tenant
+
     def crmContentService
 
+    CrmContentTemplateLoader(long tenant) {
+        this.tenant = tenant
+    }
+
     Object findTemplateSource(String name) throws IOException {
-        def ref = crmContentService.getContentByPath(name)
-        if (ref instanceof CrmResourceRef) {
-            return ref.getResource()
+        TenantUtils.withTenant(tenant) {
+            def ref = crmContentService.getContentByPath(name)
+            if (ref instanceof CrmResourceRef) {
+                return ref.getResource()
+            }
+            return null
         }
-        return null
     }
 
     long getLastModified(Object uri) {
-        crmContentService.getLastModified(uri)
+        TenantUtils.withTenant(tenant) {
+            crmContentService.getLastModified(uri)
+        }
     }
 
     Reader getReader(Object uri, String charset) throws IOException {
-        crmContentService.getReader(uri, charset)
+        TenantUtils.withTenant(tenant) {
+            crmContentService.getReader(uri, charset)
+        }
     }
 
-    void closeTemplateSource(Object uri) throws IOException{
+    void closeTemplateSource(Object uri) throws IOException {
         // When the reader is closed, temporary files are removed.
+    }
+
+    String toString() {
+        this.class.name + ' for tenant ' + tenant
     }
 }
