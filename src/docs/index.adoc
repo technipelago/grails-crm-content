@@ -418,6 +418,7 @@ The FreeMarker service checks if templates has been updated with this interval (
 
 == Changes
 
+2.4.3:: Fix for threading issues when loading FreeMarker templates from different tenants.
 2.4.2:: You can now specify destination root folder when importing content with CrmContentImportService
 2.4.1:: Fix for template rendering with specific tenant
 2.4.0:: Compatible with Grails 2.4.4
