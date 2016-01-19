@@ -21,7 +21,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile
 
 class CrmContentGrailsPlugin {
     def groupId = ""
-    def version = "2.4.3-SNAPSHOT"
+    def version = "2.4.3"
     def grailsVersion = "2.4 > *"
     def dependsOn = [:]
     def observe = ['controllers']
