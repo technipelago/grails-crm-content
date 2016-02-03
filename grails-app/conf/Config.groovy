@@ -46,6 +46,6 @@ grails.cache.config = {
 
 grails.doc.authors = "Göran Ehrsson, Technipelago AB"
 grails.doc.license = "Licensed under the Apache License, Version 2.0 (the \"License\")"
-grails.doc.copyright = "Copyright 2014 Technipelago AB"
+grails.doc.copyright = "Copyright 2016 Technipelago AB"
 grails.doc.footer = "- GR8 CRM - Content Management Plugin (crm-content)"
 grails.doc.images = new File("src/docs/images")

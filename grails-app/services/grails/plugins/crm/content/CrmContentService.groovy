@@ -22,10 +22,14 @@ import grails.plugins.crm.core.CrmCoreService
 import grails.plugins.crm.core.PagedResultList
 import grails.plugins.crm.core.SearchUtils
 import grails.plugins.crm.core.TenantUtils
+import grails.plugins.crm.security.CrmSecurityService
+import grails.plugins.crm.tags.CrmTagService
 import grails.plugins.selection.Selectable
+import grails.transaction.Transactional
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import org.apache.commons.io.FilenameUtils
+import org.apache.commons.lang.StringUtils
 import org.springframework.web.multipart.MultipartFile
 
 import java.util.regex.Pattern
@@ -35,16 +39,22 @@ class CrmContentService {
     CrmContentProviderFactory crmContentProviderFactory
 
     def grailsApplication
-    CrmCoreService crmCoreService
-    def crmSecurityService
-    def crmTagService
     def grailsCacheManager
+
+    CrmCoreService crmCoreService
+    CrmSecurityService crmSecurityService
+    CrmTagService crmTagService
+
+    static transactional = false
 
     public static final String CONTENT_PATH_CACHE = 'crmContentPath'
 
     private static final Pattern DOMAIN_PATH_PATTERN = ~/^(\w+)\/(\d+)\/(.+)/
     private static final String FILE_SEPARATOR_PATTERN = '[/\\\\]+'
 
+    public static final List<String> DEFAULT_IMAGE_NAMES = [".png", ".jpg", ".jpeg", ".gif"].asImmutable()
+
+    @Transactional
     @Listener(namespace = "crmContent", topic = "enableFeature")
     def enableFeature(event) {
         def tenant = event.tenant // [feature: feature, tenant: tenant, role:role, expires:expires]
@@ -54,6 +64,7 @@ class CrmContentService {
         }
     }
 
+    @Transactional
     @Listener(namespace = "crmTenant", topic = "requestDelete")
     def requestDeleteTenant(event) {
         def tenant = event.id
@@ -63,6 +74,7 @@ class CrmContentService {
         return count ? [namespace: 'crmContent', topic: 'deleteTenant'] : null
     }
 
+    @Transactional
     @Listener(namespace = "crmContent", topic = "deleteTenant")
     def deleteTenant(event) {
         def tenant = event.id
@@ -104,6 +116,7 @@ class CrmContentService {
      * @return List of CrmResourceFolder domain instances
      */
     @Selectable
+    @Transactional(readOnly = true)
     def list(Map params = [:]) {
         list([:], params)
     }
@@ -116,6 +129,7 @@ class CrmContentService {
      * @return List of CrmResourceFolder domain instances
      */
     @Selectable
+    @Transactional(readOnly = true)
     def list(Map query, Map params) {
         def tenant = TenantUtils.tenant
         def result = []
@@ -213,6 +227,7 @@ class CrmContentService {
      * @param params optional parameters, like name and status
      * @return the created CrmResourceRef instance
      */
+    @Transactional
     @CacheEvict(value = "content", allEntries = true)
     CrmResourceRef createResource(InputStream inputStream, String filename, Long length, String contentType, Object reference, Map params = [:]) {
         if (reference == null) {
@@ -299,6 +314,7 @@ class CrmContentService {
      * @param params optional parameters, like name and status
      * @return the created CrmResourceRef instance
      */
+    @Transactional
     CrmResourceRef createResource(File file, String contentType, Object reference, Map params = [:]) {
         def filename = file.name
         if (!contentType) {
@@ -358,6 +374,7 @@ class CrmContentService {
      * @param params optional parameters, like name and status
      * @return the created CrmResourceRef instance
      */
+    @Transactional
     CrmResourceRef createResource(MultipartFile file, Object reference, Map params = [:]) {
         def proxy = grailsApplication.mainContext.crmContentService
         def resource = proxy.createResource(file.inputStream, file.originalFilename, file.size, file.contentType, reference, params)
@@ -374,6 +391,7 @@ class CrmContentService {
      * @param params optional parameters, like name and status
      * @return the created CrmResourceRef instance
      */
+    @Transactional
     CrmResourceRef createResource(String text, String filename, Object reference, Map params = [:]) {
         def contentType = params.contentType
         if (!contentType) {
@@ -389,6 +407,7 @@ class CrmContentService {
         return resource
     }
 
+    @Transactional
     @CacheEvict(value = "content", allEntries = true)
     long updateResource(CrmResourceRef resource, InputStream inputStream, String contentType = null) {
         def uri = resource.resource
@@ -412,6 +431,7 @@ class CrmContentService {
      * @param params optional parameters, like name and status
      * @return the created CrmResourceRef instance
      */
+    @Transactional
     CrmResourceRef addReference(CrmResourceRef resource, Object reference, Map params = [:]) {
         def referenceIsDomain = crmCoreService.isDomainClass(reference)
         if (referenceIsDomain && !reference.ident()) {
@@ -445,10 +465,12 @@ class CrmContentService {
      * @param id the primary key to lookup
      * @return CrmResourceRef instance
      */
+    @Transactional(readOnly = true)
     def getResourceRef(id) {
         CrmResourceRef.get(id)
     }
 
+    @Transactional(readOnly = true)
     String getUniqueName(String basename, Long tenant = null) {
         if (tenant == null) {
             tenant = TenantUtils.tenant
@@ -479,6 +501,7 @@ class CrmContentService {
     }
 
     @CompileStatic
+    @Transactional(readOnly = true)
     long writeTo(URI uri, OutputStream out) {
         def provider = crmContentProviderFactory.getProvider(uri)
         if (!provider) {
@@ -488,6 +511,7 @@ class CrmContentService {
     }
 
     @CompileStatic
+    @Transactional(readOnly = true)
     Reader getReader(URI uri, String charsetName = null) {
         def provider = crmContentProviderFactory.getProvider(uri)
         if (!provider) {
@@ -503,6 +527,7 @@ class CrmContentService {
      */
     @CompileStatic
     @Cacheable("content")
+    @Transactional(readOnly = true)
     Map<String, Object> getMetadata(URI resource) {
         def provider = crmContentProviderFactory.getProvider(resource)
         if (!provider) {
@@ -515,6 +540,7 @@ class CrmContentService {
 
     @CompileStatic
     @Cacheable("content")
+    @Transactional(readOnly = true)
     long getLastModified(URI resource) {
         def provider = crmContentProviderFactory.getProvider(resource)
         if (!provider) {
@@ -530,6 +556,7 @@ class CrmContentService {
      * @param params optional pagination or sorting parameters
      * @return List of CrmResourceRef instances
      */
+    @Transactional(readOnly = true)
     List<CrmResourceRef> findResourcesByReference(reference, params = [:]) {
         if (!reference) {
             throw new RuntimeException("Reference is null.")
@@ -565,8 +592,41 @@ class CrmContentService {
     }
 
     @CompileStatic
+    @Transactional(readOnly = true)
     CrmResourceRef getAttachedResource(Object reference, String name, Integer status = null) {
         findResourcesByReference(reference, [name: name, status: status]).find { it }
+    }
+
+    public List<String> getDefaultImageFilter() {
+        grailsApplication.config.crm.content.image.names ?: DEFAULT_IMAGE_NAMES
+    }
+
+    @Transactional(readOnly = true)
+    public List<CrmResourceRef> getAttachedImages(reference, Integer status = CrmResourceRef.STATUS_SHARED) {
+        def filter = getDefaultImageFilter()
+        def result = []
+        for (name in filter) {
+            def tmp = findResourcesByReference(reference, [name: name, status: status])
+            if (tmp) {
+                result.addAll(tmp)
+            }
+        }
+        return result
+    }
+
+    @CompileStatic
+    public boolean isImage(CrmResourceRef file) {
+        isImage(file.name)
+    }
+
+    @CompileStatic
+    public boolean isImage(String name) {
+        if(StringUtils.isBlank(name)) {
+            return false
+        }
+        name = name.toLowerCase()
+        def filter = getDefaultImageFilter()
+        filter.find{name.endsWith(it)} != null
     }
 
     /**
@@ -576,6 +636,7 @@ class CrmContentService {
      * @return resource content bytes
      */
     @CompileStatic
+    @Transactional(readOnly = true)
     byte[] getBytes(Object reference, String name) {
         def result = findResourcesByReference(reference, [name: name])
         if (!result) {
@@ -597,7 +658,8 @@ class CrmContentService {
      * @param params optional pagination or sorting parameters
      * @return List of CrmResourceRef instances
      */
-    List findReferences(URI resource, params = [:]) {
+    @Transactional(readOnly = true)
+    List<CrmResourceRef> findReferences(URI resource, params = [:]) {
         if (!resource) {
             throw new RuntimeException("Parameter [resource] cannot be null")
         }
@@ -616,6 +678,7 @@ class CrmContentService {
      * @param reference domain instance or reference name
      * @return number of resources deleted
      */
+    @Transactional
     int deleteAllResources(def reference) {
         def proxy = grailsApplication.mainContext.crmContentService
         def links = findResourcesByReference(reference, [cache: false])
@@ -635,6 +698,7 @@ class CrmContentService {
      * @param resourceRef CrmResourceRef instance to delete.
      * @return true if the resource was deleted, false if only the reference was deleted.
      */
+    @Transactional
     @CacheEvict(value = "content", allEntries = true)
     boolean deleteReference(CrmResourceRef resourceRef) {
         def resource = resourceRef.resource
@@ -653,6 +717,7 @@ class CrmContentService {
     }
 
     @CompileStatic
+    @Transactional(readOnly = true)
     CrmResourceFolder getFolder(String path, Long tenantId = TenantUtils.tenant) {
         getFolderByList(trimPath(path).split(FILE_SEPARATOR_PATTERN).toList(), tenantId)
     }
@@ -669,6 +734,7 @@ class CrmContentService {
         return path
     }
 
+    @Transactional(readOnly = true)
     private CrmResourceFolder getFolderByList(List<String> path, Long tenantId) {
         def folder
         for (name in path) {
@@ -690,6 +756,7 @@ class CrmContentService {
         return folder
     }
 
+    @Transactional
     CrmResourceFolder createFolder(CrmResourceFolder parent, String name, String title = null, String description = null, String password = null) {
         // Use same tenant as parent, otherwise we screw up things completely.
         def tenant = parent?.tenantId ?: TenantUtils.tenant
@@ -724,6 +791,7 @@ class CrmContentService {
         return folder
     }
 
+    @Transactional
     CrmResourceFolder createFolders(String path) {
         def parts = FilenameUtils.normalize(trimPath(path)).split(FILE_SEPARATOR_PATTERN)
         def folder
@@ -735,6 +803,7 @@ class CrmContentService {
         return folder
     }
 
+    @Transactional
     String deleteFolder(CrmResourceFolder folder) {
         def tenant = folder.tenantId
         def tombstone = folder.toString()
@@ -758,6 +827,7 @@ class CrmContentService {
         return tombstone
     }
 
+    @Transactional(readOnly = true)
     def getContentByPath(String path, Long tenantId = TenantUtils.tenant) {
         if (path == null) {
             throw new IllegalArgumentException("CrmContentService#getContentByPath(String, Long) called with null path parameter")
@@ -829,6 +899,7 @@ class CrmContentService {
         return resource
     }
 
+    @Transactional(readOnly = true)
     String getAbsolutePath(Object content, boolean urlEncoded = false) {
         def parent
         if (content instanceof CrmResourceRef) {
@@ -874,6 +945,7 @@ class CrmContentService {
      * @param newName new name or null to keep same name
      * @return the created copy
      */
+    @Transactional
     CrmResourceRef copy(CrmResourceRef from, CrmResourceFolder toFolder, String newName = null) {
         def metadata = getMetadata(from.resource)
         def ref
@@ -899,6 +971,7 @@ class CrmContentService {
      * @param newTitle new title of folder or null is keep same title
      * @return the created destination folder
      */
+    @Transactional
     CrmResourceFolder copy(CrmResourceFolder fromFolder, CrmResourceFolder toFolder, String newName = null, String newTitle = null) {
         if (!newName) {
             newName = fromFolder.name
@@ -995,6 +1068,7 @@ class CrmContentService {
         return icon ?: (defaultIcon ?: 'page_white')
     }
 
+    @Transactional(readOnly = true)
     long getResourceUsage(Long tenant = TenantUtils.tenant) {
         long total = 0L
         def result = CrmResourceRef.createCriteria().list() {
@@ -1020,6 +1094,7 @@ class CrmContentService {
      * If no CrmResourceRef instance of found pointing to the file, the file will be deleted from the repository.
      * @return number of bytes deleted
      */
+    @Transactional
     long cleanup() {
         long size = 0L;
         for (p in crmContentProviderFactory.getProviders()) {
