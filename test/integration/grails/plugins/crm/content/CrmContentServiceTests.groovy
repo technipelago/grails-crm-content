@@ -454,4 +454,21 @@ class CrmContentServiceTests extends GroovyTestCase {
         // Cleanup
         crmContentService.deleteFolder(crmContentService.getFolder("myfolder", tenant))
     }
+
+    void testIsImage() {
+        def imageFolder = crmContentService.createFolder(null, "photos")
+        def jpg = crmContentService.createResource(new MockMultipartFile("file", "/tmp/test1.jpg", "image/jpeg", "This is not an image".getBytes("UTF-8")), imageFolder)
+        def jpeg = crmContentService.createResource(new MockMultipartFile("file", "/tmp/test1.jpeg", "image/jpeg", "This is not an image".getBytes("UTF-8")), imageFolder)
+        def png = crmContentService.createResource(new MockMultipartFile("file", "/tmp/test1.png", "image/jpeg", "This is not an image".getBytes("UTF-8")), imageFolder)
+        def gif = crmContentService.createResource(new MockMultipartFile("file", "/tmp/test1.gif", "image/jpeg", "This is not an image".getBytes("UTF-8")), imageFolder)
+        def tif = crmContentService.createResource(new MockMultipartFile("file", "/tmp/test1.tif", "image/jpeg", "This is not an image".getBytes("UTF-8")), imageFolder)
+
+        // The configuration parameter 'crm.content.image.names' can be set to a list of file name extensions
+        // that should be interpreted as images.
+        assert crmContentService.isImage(jpg)
+        assert crmContentService.isImage(jpeg)
+        assert crmContentService.isImage(png.name) // String version
+        assert crmContentService.isImage(gif)
+        assert !crmContentService.isImage(tif) // tif is not included in CrmContextService.DEFAULT_IMAGE_NAMES
+    }
 }

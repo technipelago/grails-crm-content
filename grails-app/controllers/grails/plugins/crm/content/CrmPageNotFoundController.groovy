@@ -16,7 +16,6 @@
 
 package grails.plugins.crm.content
 
-import org.apache.commons.lang.StringUtils
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -25,30 +24,20 @@ import org.springframework.web.context.request.RequestContextHolder
  */
 class CrmPageNotFoundController {
 
+    def crmContentService
+
     def index() {
         String wantedPage = request.forwardURI - request.contextPath
         if (wantedPage[0] == '/') {
             wantedPage = wantedPage.substring(1)
         }
         // Do not render a HTML page if it was an image or AJAX request.
-        if (isImage(wantedPage) || request.xhr) {
+        if (crmContentService.isImage(wantedPage) || request.xhr) {
             RequestContextHolder.currentRequestAttributes().setRenderView(false)
             response.setStatus(404)
         } else {
             response.setStatus(200)
             return [uri: wantedPage] // index.gsp will try to lookup the text template.
-        }
-    }
-
-    private boolean isImage(String name) {
-        switch (StringUtils.substringAfterLast(name.toLowerCase(), '.')) {
-            case 'png':
-            case 'jpg':
-            case 'jpeg':
-            case 'gif':
-                return true
-            default:
-                return false
         }
     }
 }
