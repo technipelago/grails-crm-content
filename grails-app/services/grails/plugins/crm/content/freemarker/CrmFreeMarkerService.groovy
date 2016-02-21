@@ -16,7 +16,6 @@
 
 package grails.plugins.crm.content.freemarker
 
-import freemarker.cache.CacheStorage
 import freemarker.cache.TemplateLoader
 import freemarker.template.Configuration
 import freemarker.template.SimpleNumber
@@ -33,6 +32,8 @@ class CrmFreeMarkerService {
 
     public static final Version FREEMARKER_FEATURE_LEVEL = new Version(2, 3, 21)
 
+    private static final List<String> EXTENSIONS = ['', '.html', '.ftl']
+
     def grailsApplication
     def crmCoreService
     def crmContentService
@@ -42,7 +43,10 @@ class CrmFreeMarkerService {
         def cfg = new Configuration(FREEMARKER_FEATURE_LEVEL)
 
         // Set to 0-60 for debugging and higher value in production environment.
-        cfg.setTemplateUpdateDelayMilliseconds((grailsConfig.updateDelay ?: 60) * 1000)
+        int seconds = grailsConfig?.containsKey('updateDelay') ? grailsConfig.updateDelay : 60
+        cfg.setTemplateUpdateDelayMilliseconds(seconds * 1000)
+
+        log.debug "FreeMarker template update delay set to $seconds seconds for tenant $tenant"
 
         // Use beans wrapper (recommended for most applications)
         //cfg.setObjectWrapper(ObjectWrapper.DEFAULT_WRAPPER)
@@ -115,13 +119,20 @@ class CrmFreeMarkerService {
         if (TenantUtils.withTenant(tenant) {
             def cfg = configurations.get(tenant)
             TemplateLoader loader = cfg.getTemplateLoader()
-            Object templateSource = loader.findTemplateSource(name)
+            Object templateSource = EXTENSIONS.find { ext ->
+                if (ext && !name.endsWith(ext)) {
+                    return loader.findTemplateSource(name + ext)
+                }
+                loader.findTemplateSource(name)
+            }
             if (templateSource != null) {
                 loader.closeTemplateSource(templateSource)
                 return true
             }
             false
-        }) return true
+        }) {
+            return true
+        }
 
         def fallbackTenant = grailsApplication.config.crm.content.include.tenant ?: 1L
         if (tenant != fallbackTenant) {
@@ -178,7 +189,13 @@ class CrmFreeMarkerService {
         if (tenant != null) {
             try {
                 def cfg = configurations.get(tenant)
-                template = locale ? cfg.getTemplate(path, locale) : cfg.getTemplate(path)
+                def name = EXTENSIONS.find { ext ->
+                    if (ext && !path.endsWith(ext)) {
+                        return templateExist(tenant, path + ext) ? path + ext : null
+                    }
+                    templateExist(tenant, path) ? path : null
+                }
+                template = cfg.getTemplate(name ?: path, (Locale)locale)
             } catch (FileNotFoundException fnfe) {
                 log.debug "Freemarker template [$path] not found in tenant [$tenant]"
             }
@@ -211,10 +228,11 @@ class CrmFreeMarkerService {
      * @param templateName template name/path
      */
     void removeFromCache(String templateName) {
-        Configuration configuration = configurations.get(TenantUtils.tenant)
+        def tenant = TenantUtils.tenant
+        Configuration configuration = configurations.get(tenant)
         if (configuration) {
-            CacheStorage cache = configuration.getCacheStorage()
-            cache.remove(templateName)
+            configuration.removeTemplateFromCache(templateName)
+            log.debug "FreeMarker template [$templateName] removed from cache in tenant [$tenant]"
         }
     }
 
@@ -222,10 +240,11 @@ class CrmFreeMarkerService {
      * Removes all templates from the cache, this will force reload from DB on next template access.
      */
     void clearCache() {
-        Configuration configuration = configurations.get(TenantUtils.tenant)
+        def tenant = TenantUtils.tenant
+        Configuration configuration = configurations.get(tenant)
         if (configuration) {
-            CacheStorage cache = configuration.getCacheStorage()
-            cache.clear()
+            configuration.clearTemplateCache()
+            log.debug "FreeMarker cache cleared for tenant [$tenant]"
         }
     }
 
