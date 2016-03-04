@@ -86,6 +86,10 @@ class CrmFreeMarkerService {
         return cfg
     }
 
+    Configuration getConfiguration(Long tenant) {
+        configurations.get(tenant ?: 0L)
+    }
+
     /**
      * Set a shared variable for a tenant. This variable can then be used in FreeMarker templates.
      *
@@ -117,7 +121,7 @@ class CrmFreeMarkerService {
             return false
         }
         if (TenantUtils.withTenant(tenant) {
-            def cfg = configurations.get(tenant)
+            def cfg = getConfiguration(tenant)
             TemplateLoader loader = cfg.getTemplateLoader()
             Object templateSource = EXTENSIONS.find { ext ->
                 if (ext && !name.endsWith(ext)) {
@@ -188,7 +192,7 @@ class CrmFreeMarkerService {
         Template template
         if (tenant != null) {
             try {
-                def cfg = configurations.get(tenant)
+                def cfg = getConfiguration(tenant)
                 def name = EXTENSIONS.find { ext ->
                     if (ext && !path.endsWith(ext)) {
                         return templateExist(tenant, path + ext) ? path + ext : null
@@ -229,11 +233,9 @@ class CrmFreeMarkerService {
      */
     void removeFromCache(String templateName) {
         def tenant = TenantUtils.tenant
-        Configuration configuration = configurations.get(tenant)
-        if (configuration) {
-            configuration.removeTemplateFromCache(templateName)
-            log.debug "FreeMarker template [$templateName] removed from cache in tenant [$tenant]"
-        }
+        Configuration configuration = getConfiguration(tenant)
+        configuration.removeTemplateFromCache(templateName)
+        log.debug "FreeMarker template [$templateName] removed from cache in tenant [$tenant]"
     }
 
     /**
@@ -241,11 +243,9 @@ class CrmFreeMarkerService {
      */
     void clearCache() {
         def tenant = TenantUtils.tenant
-        Configuration configuration = configurations.get(tenant)
-        if (configuration) {
-            configuration.clearTemplateCache()
-            log.debug "FreeMarker cache cleared for tenant [$tenant]"
-        }
+        Configuration configuration = getConfiguration(tenant)
+        configuration.clearTemplateCache()
+        log.debug "FreeMarker cache cleared for tenant [$tenant]"
     }
 
     /**
