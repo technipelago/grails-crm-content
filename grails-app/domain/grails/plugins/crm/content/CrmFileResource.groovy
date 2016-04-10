@@ -127,15 +127,17 @@ class CrmFileResource {
      *
      * @param work
      */
-    void withInputStream(Closure work) {
+    def withInputStream(Closure work) {
         def f = getFile()
+        def rval
         try {
-            f.withInputStream(work)
+            rval = f.withInputStream(work)
         } finally {
             if (encrypted) {
                 f.delete()
             }
         }
+        rval
     }
 
     /**
