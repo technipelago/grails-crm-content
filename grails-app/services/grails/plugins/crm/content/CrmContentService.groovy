@@ -301,7 +301,7 @@ class CrmContentService {
         }
         log.debug "${uri ? 'Created' : 'Updated'} resource [${resource.name}] in tenant $tenant"
         event(for: "crmContent", topic: (uri ? "created" : "updated"),
-                data: [tenant: resource.tenantId, id: resource.id, name: resource.name])
+                data: [tenant: resource.tenantId, id: resource.id, name: resource.name, ref: resource.ref])
         return resource
     }
 
@@ -328,7 +328,8 @@ class CrmContentService {
         file.withInputStream { inputStream ->
             resource = proxy.createResource(inputStream, filename, file.length(), contentType, reference, params)
         }
-        event(for: "crmContent", topic: "created", data: [tenant: resource.tenantId, id: resource.id, name: resource.name])
+        event(for: "crmContent", topic: "created",
+                data: [tenant: resource.tenantId, id: resource.id, name: resource.name, ref: resource.ref])
         return resource
     }
 
@@ -378,7 +379,8 @@ class CrmContentService {
     CrmResourceRef createResource(MultipartFile file, Object reference, Map params = [:]) {
         def proxy = grailsApplication.mainContext.crmContentService
         def resource = proxy.createResource(file.inputStream, file.originalFilename, file.size, file.contentType, reference, params)
-        event(for: "crmContent", topic: "created", data: [tenant: resource.tenantId, id: resource.id, name: resource.name])
+        event(for: "crmContent", topic: "created",
+                data: [tenant: resource.tenantId, id: resource.id, name: resource.name, ref: resource.ref])
         return resource
     }
 
@@ -403,7 +405,8 @@ class CrmContentService {
         }
         def proxy = grailsApplication.mainContext.crmContentService
         def resource = proxy.createResource(new ByteArrayInputStream(text.getBytes('UTF-8')), filename, text.length(), contentType, reference, params)
-        event(for: "crmContent", topic: "created", data: [tenant: resource.tenantId, id: resource.id, name: resource.name])
+        event(for: "crmContent", topic: "created",
+                data: [tenant: resource.tenantId, id: resource.id, name: resource.name, ref: resource.ref])
         return resource
     }
 
@@ -418,7 +421,8 @@ class CrmContentService {
         // Update file content.
         long newLength = provider.update(uri, inputStream, contentType).bytes
 
-        event(for: "crmContent", topic: "updated", data: [tenant: resource.tenantId, id: resource.id, name: resource.name])
+        event(for: "crmContent", topic: "updated",
+                data: [tenant: resource.tenantId, id: resource.id, name: resource.name, ref: resource.ref])
 
         return newLength
     }
@@ -709,7 +713,8 @@ class CrmContentService {
             log.debug "Deleting [${resourceRef.name}] and it's resource"
             boolean deleted = provider.delete(resource)
             String username = crmSecurityService.currentUser?.username
-            event(for: "crmContent", topic: "deleted", data: [tenant: resourceRef.tenantId, id: resourceRef.id, name: resourceRef.name, user: username])
+            event(for: "crmContent", topic: "deleted",
+                    data: [tenant: resourceRef.tenantId, id: resourceRef.id, name: resourceRef.name, ref: resourceRef.ref, user: username])
             return deleted
         }
         log.debug "Deleted resource [${resourceRef.name}] but other references exists"
