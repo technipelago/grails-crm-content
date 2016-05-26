@@ -132,7 +132,7 @@ class CrmResourceRef implements CrmContentNode {
 
     @CompileStatic
     transient String getExt() {
-        FilenameUtils.getExtension(name)
+        FilenameUtils.getExtension(name)?.toLowerCase()
     }
 
     @CompileStatic
