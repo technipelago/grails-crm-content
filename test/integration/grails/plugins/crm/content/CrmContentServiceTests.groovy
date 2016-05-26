@@ -471,4 +471,13 @@ class CrmContentServiceTests extends GroovyTestCase {
         assert crmContentService.isImage(gif)
         assert !crmContentService.isImage(tif) // tif is not included in CrmContextService.DEFAULT_IMAGE_NAMES
     }
+
+    void testExtension() {
+        assert new CrmResourceRef().ext == null
+        assert new CrmResourceRef(name: '').ext == null
+        assert new CrmResourceRef(name: 'test').ext == ''
+        assert new CrmResourceRef(name: 'test.pdf').ext == 'pdf'
+        assert new CrmResourceRef(name: 'test.jpg').ext == 'jpg'
+        assert new CrmResourceRef(name: 'test.JPG').ext == 'jpg'
+    }
 }
