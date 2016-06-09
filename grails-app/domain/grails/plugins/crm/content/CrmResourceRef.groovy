@@ -82,7 +82,7 @@ class CrmResourceRef implements CrmContentNode {
 
     @CompileStatic
     public static String normalizeName(String name) {
-        String result = name != null ? StringUtils.replaceChars(FilenameUtils.normalize(removeAccents(name)), '\\/|"\':?*<>', '---__...()') : null
+        String result = name != null ? StringUtils.replaceChars(FilenameUtils.normalize(removeAccents(name)), '\\/|"\':?&*<>', '---__....()') : null
         // Replace repeated special character occurrences with a single character.
         // Also strip dot, comma and underscore from end of string.
         return result ? result.replaceAll(/([\.\-_])\1+/, '$1').replaceAll(/[\.\-_]$/, '') : null
