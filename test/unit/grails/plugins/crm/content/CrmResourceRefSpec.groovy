@@ -40,20 +40,20 @@ class CrmResourceRefSpec extends Specification {
 
     def "illegal characters in filenames should be removed"() {
         given:
-        def r = new CrmResourceRef(name: "*Görans/\"Hello\\World\"|Foo':<test>?")
+        def r = new CrmResourceRef(name: "*Göran***Ehrsson/\"Hello\\World\"|Foo':<test>?")
 
         when: "beforeValidate should normalize the filename"
         r.beforeValidate()
 
         then:
-        r.name == ".Gorans-_Hello-World_-Foo_.(test)."
+        r.name == ".Goran.Ehrsson-_Hello-World_-Foo_.(test)"
 
         when: "repeated calls to beforeValidate"
         r.beforeValidate()
         r.beforeValidate()
         r.beforeValidate()
 
-        then: "should not change the name"
-        r.name == ".Gorans-_Hello-World_-Foo_.(test)."
+        then: "should not change the name anymore"
+        r.name == ".Goran.Ehrsson-_Hello-World_-Foo_.(test)"
     }
 }
