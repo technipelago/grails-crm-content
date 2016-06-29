@@ -470,7 +470,7 @@ class CrmContentService {
      * @return CrmResourceRef instance
      */
     @Transactional(readOnly = true)
-    def getResourceRef(id) {
+    CrmResourceRef getResourceRef(id) {
         CrmResourceRef.get(id)
     }
 
@@ -839,7 +839,7 @@ class CrmContentService {
         }
         path = trimPath(path)
 
-        def pathAsList = path.split(FILE_SEPARATOR_PATTERN).toList()
+        List<String> pathAsList = path.split(FILE_SEPARATOR_PATTERN).toList()
         if (pathAsList.isEmpty()) {
             throw new IllegalArgumentException("Invalid content path: " + path)
         }
@@ -852,7 +852,7 @@ class CrmContentService {
             return null
         } else if (id != null) {
             resource = CrmResourceRef.get(id)
-            if (resource) {
+            if (resource != null) {
                 return resource
             }
         }
@@ -862,7 +862,7 @@ class CrmContentService {
         def matcher = path =~ DOMAIN_PATH_PATTERN
         if (matcher.matches()) {
             def domain = matcher.group(1)
-            if (grailsApplication.domainClasses.find { it.propertyName == domain }) {
+            if (isDomainClass(domain)) {
                 ownerIdentifier = domain + '@' + matcher.group(2)
                 filename = matcher.group(3)
                 log.debug "$path is an attachment to $ownerIdentifier"
@@ -902,6 +902,11 @@ class CrmContentService {
         }
 
         return resource
+    }
+
+    @Cacheable("content")
+    private boolean isDomainClass(String name) {
+        grailsApplication.domainClasses.find { it.propertyName == name } != null
     }
 
     @Transactional(readOnly = true)
