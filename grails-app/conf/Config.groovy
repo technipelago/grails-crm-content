@@ -44,6 +44,14 @@ grails.cache.config = {
     }
 }
 
+crm {
+    content {
+	file {
+	    path = "./target/content-repository"
+	}
+    }
+}
+
 grails.doc.authors = "Göran Ehrsson, Technipelago AB"
 grails.doc.license = "Licensed under the Apache License, Version 2.0 (the \"License\")"
 grails.doc.copyright = "Copyright 2016 Technipelago AB"
