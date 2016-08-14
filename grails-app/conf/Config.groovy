@@ -22,8 +22,8 @@ log4j = {
 
     warn   'org.mortbay.log'
 
-    debug  'grails.app.services.grails.plugins.crm.content'
-    debug  'freemarker.cache'
+    //debug  'grails.app.services.grails.plugins.crm.content'
+    //debug  'freemarker.cache'
 }
 grails.views.default.codec="none" // none, html, base64
 grails.views.gsp.encoding="UTF-8"
