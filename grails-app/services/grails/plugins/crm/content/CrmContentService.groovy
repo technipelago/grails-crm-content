@@ -609,8 +609,8 @@ class CrmContentService {
     public List<CrmResourceRef> getAttachedImages(reference, Integer status = CrmResourceRef.STATUS_SHARED) {
         def filter = getDefaultImageFilter()
         def result = []
-        for (name in filter) {
-            def tmp = findResourcesByReference(reference, [name: name, status: status])
+        for (ext in filter) {
+            def tmp = findResourcesByReference(reference, [name: '*' + ext, status: status])
             if (tmp) {
                 result.addAll(tmp)
             }
