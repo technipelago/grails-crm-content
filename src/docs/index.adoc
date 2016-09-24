@@ -85,11 +85,12 @@ possible status a content instance can have. The constants are listed below.
 .Content Status
 [options="header"]
 |===
-| Constant                        | Description
-| CrmResourceRef.STATUS_DRAFT     | Content is in draft state and only accessible by authenticated users
-| CrmResourceRef.STATUS_ARCHIVED  | Content is archived and only accessible by authenticated users
-| CrmResourceRef.STATUS_PUBLISHED | Content is active/current but only accessible by authenticated users
-| CrmResourceRef.STATUS_SHARED    | Content is accessible by anyone, no authentication needed = *public access if URL is known!*
+| Constant                         | Description
+| CrmResourceRef.STATUS_DRAFT      | Content is in draft state and only accessible by authenticated users
+| CrmResourceRef.STATUS_ARCHIVED   | Content is archived and only accessible by authenticated users
+| CrmResourceRef.STATUS_PUBLISHED  | Content is active/current but only accessible by authenticated users
+| CrmResourceRef.STATUS_RESTRICTED | Content is only accessible by a restricted group of people (application specific)
+| CrmResourceRef.STATUS_SHARED     | Content is accessible by anyone, no authentication needed = *public access if URL is known!*
 |===
 
 === Encryption

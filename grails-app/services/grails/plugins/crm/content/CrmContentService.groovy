@@ -210,7 +210,7 @@ class CrmContentService {
         if (ref.shared) {
             return true
         }
-        if (ref.published && (ref.tenantId == TenantUtils.tenant) && authenticated) {
+        if ((ref.published || ref.restricted) && (ref.tenantId == TenantUtils.tenant) && authenticated) {
             return true
         }
         return false

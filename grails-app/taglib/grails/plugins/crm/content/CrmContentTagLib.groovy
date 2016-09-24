@@ -129,7 +129,7 @@ class CrmContentTagLib {
         // This can be disabled with the 'authorized' attribute.
         if (!attrs.authorized) {
             resourceList = resourceList.findAll {
-                (it.published && (it.tenantId == includeTenant)) || crmContentService.hasViewPermission(it, true)
+                ((it.restricted || it.published) && (it.tenantId == includeTenant)) || crmContentService.hasViewPermission(it, true)
             }
         }
 
@@ -257,12 +257,12 @@ class CrmContentTagLib {
         if (ref instanceof CrmResourceRef) {
             def parent = ref.reference
             if (parent instanceof CrmResourceFolder) {
-                if (!(parent.sharedPath || ref.shared || (ref.published && (ref.tenantId == TenantUtils.tenant)))) {
+                if (!(parent.sharedPath || ref.shared || ((ref.restricted || ref.published) && (ref.tenantId == TenantUtils.tenant)))) {
                     throwTagError("Can't link to a non-shared resource [$ref]")
                 }
                 ctrl = 'r'
             } else {
-                if (!(ref.shared || (ref.published && (ref.tenantId == TenantUtils.tenant)))) {
+                if (!(ref.shared || ((ref.restricted || ref.published) && (ref.tenantId == TenantUtils.tenant)))) {
                     throwTagError("Can't link to a non-shared resource [$ref]")
                 }
                 ctrl = 's'

@@ -37,9 +37,12 @@ class CrmResourceRef implements CrmContentNode {
     public static final Integer STATUS_ARCHIVED = -1
     public static final Integer STATUS_DRAFT = 0
     public static final Integer STATUS_PUBLISHED = 1
+    public static final Integer STATUS_RESTRICTED = 3
     public static final Integer STATUS_SHARED = 5
-    public static final List<Integer> STATUS_LIST = [STATUS_ARCHIVED, STATUS_DRAFT, STATUS_PUBLISHED, STATUS_SHARED]
-    public static final Map<String, Integer> STATUS_TEXTS = [archived: STATUS_ARCHIVED, draft: STATUS_DRAFT, published: STATUS_PUBLISHED, shared: STATUS_SHARED]
+    public static final List<Integer> STATUS_LIST = [STATUS_ARCHIVED, STATUS_DRAFT, STATUS_PUBLISHED, STATUS_RESTRICTED, STATUS_SHARED]
+    public static final Map<String, Integer> STATUS_TEXTS = [archived: STATUS_ARCHIVED, draft: STATUS_DRAFT,
+                                                             published: STATUS_PUBLISHED, restricted: STATUS_RESTRICTED,
+                                                             shared: STATUS_SHARED]
 
     // Lazy initialized (see getters below)
     private def _crmCoreService
@@ -71,7 +74,7 @@ class CrmResourceRef implements CrmContentNode {
     }
 
     static transients = ['icon', 'path', 'ext', 'reference', 'folder', 'resource', 'metadata', 'lastModified',
-            'archived', 'draft', 'published', 'shared', 'statusText', 'dao', 'encoding', 'reader', 'text', 'bytes']
+            'archived', 'draft', 'published', 'restricted', 'shared', 'statusText', 'dao', 'encoding', 'reader', 'text', 'bytes']
 
     static taggable = true
 
@@ -184,6 +187,11 @@ class CrmResourceRef implements CrmContentNode {
     @CompileStatic
     transient boolean isPublished() {
         status == STATUS_PUBLISHED
+    }
+
+    @CompileStatic
+    transient boolean isRestricted() {
+        status == STATUS_RESTRICTED
     }
 
     @CompileStatic
