@@ -1111,7 +1111,7 @@ class CrmContentService {
             size += p.check({ URI uri ->
                 boolean rval = false
                 if(CrmResourceRef.countByRes(uri.toString()) == 0) {
-                    rval = delete(uri) // No one is refering to this file, remove it!
+                    rval = p.delete(uri) // No one is refering to this file, remove it!
                 }
                 return rval
             })
