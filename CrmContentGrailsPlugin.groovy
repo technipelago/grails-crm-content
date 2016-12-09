@@ -49,9 +49,14 @@ Content can be shared with users of the application or shared publicly to the wo
     def scm = [url: "https://github.com/technipelago/grails-crm-content"]
 
     def doWithSpring = {
-        def fcp = crmFileContentProvider(grails.plugins.crm.content.CrmFileContentProvider)
-        crmContentProviderFactory(grails.plugins.crm.content.DefaultContentProviderFactory) {
-            crmContentProvider = fcp
+        crmContentRouter(grails.plugins.crm.content.DefaultContentRouter) { bean ->
+            bean.autowire = 'byName'
+        }
+        crmFileContentProvider(grails.plugins.crm.content.CrmFileContentProvider) { bean ->
+            bean.autowire = 'byName'
+        }
+        crmContentProviderFactory(grails.plugins.crm.content.DefaultContentProviderFactory) { bean ->
+            bean.autowire = 'byName'
         }
 
         // One template loader is (lazy) created for each tenant, therefore it must be prototype scoped.

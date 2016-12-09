@@ -33,6 +33,14 @@ import java.util.Map;
 public interface CrmContentProvider {
 
     /**
+     * Decide if this content provider can handle an existing resource.
+     *
+     * @param resourceURI an existing resource identifier
+     * @returntrue if this content provider can read this resource
+     */
+    boolean handles(URI resourceURI);
+
+    /**
      * Write content to persistent storage.
      *
      * @param content     the content to persist

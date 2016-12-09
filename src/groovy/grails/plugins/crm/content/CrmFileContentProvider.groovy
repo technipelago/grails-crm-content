@@ -31,6 +31,12 @@ class CrmFileContentProvider implements CrmContentProvider {
     public static final String host = "localhost"
 
     @CompileStatic
+    @Override
+    boolean handles(URI resourceURI) {
+        resourceURI.scheme == scheme
+    }
+
+    @CompileStatic
     private CrmFileResource getResource(URI uri) {
         def resource = CrmFileResource.get(uri.path.substring(1))
         if (!resource) {

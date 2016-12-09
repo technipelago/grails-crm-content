@@ -16,36 +16,45 @@
 
 package grails.plugins.crm.content
 
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.commons.GrailsApplication
+
 /**
  * Default content provider factory.
  */
 class DefaultContentProviderFactory implements CrmContentProviderFactory {
 
-    def crmContentProvider
+    GrailsApplication grailsApplication
+    CrmContentRouter crmContentRouter
 
     /**
-     * Get content provider.
+     * Get content provider for a specific kind of content.
      *
      * @param filename file name
      * @param length size of content in bytes
-     * @param reference
-     * @return content provider instance
+     * @param reference domain instance that the content is attached to
+     * @param username user that wants to store the content
+     * @return content provider that is available to store the content
      */
     @Override
+    @CompileStatic
     CrmContentProvider getProvider(String filename, long length, Object reference, String username) {
-        return crmContentProvider
-    }
-
-    @Override
-    CrmContentProvider getProvider(URI resourceURI) {
-        if(resourceURI.scheme == 'file') {
-            return crmContentProvider
+        def provider = crmContentRouter.getProvider(filename, length, reference, username)
+        if (provider == null) {
+            throw new RuntimeException("No content provider found for $filename")
         }
-        return null
+        provider
     }
 
     @Override
-    List<CrmContentProvider> getProviders() {
-        [crmContentProvider]
+    @CompileStatic
+    CrmContentProvider getProvider(URI resourceURI) {
+        getProviders().find { it.handles(resourceURI) }
+    }
+
+    @Override
+    @CompileStatic
+    Collection<CrmContentProvider> getProviders() {
+        grailsApplication.mainContext.getBeansOfType(CrmContentProvider.class).values()
     }
 }

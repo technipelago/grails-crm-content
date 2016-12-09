@@ -17,29 +17,30 @@
 package grails.plugins.crm.content;
 
 import java.net.URI;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Factory interface for access to content providers.
  */
 public interface CrmContentProviderFactory {
     /**
-     * Get content provider.
+     * Get content provider for a specific kind of content.
      *
-     * @param filename file name
-     * @param length size of content in bytes
-     * @param reference
-     * @return content provider instance
+     * @param filename  file name
+     * @param length    size of content in bytes
+     * @param reference domain instance that the content is attached to
+     * @param username  user that wants to store the content
+     * @return content provider that accepted to store the content
      */
     CrmContentProvider getProvider(String filename, long length, Object reference, String username);
 
     /**
-     * Get provider for a specific resource identifier.
+     * Get provider for existing content.
      *
      * @param resourceURI a resource identifier
      * @return provide instance that can retrieve content from the specified URI
      */
     CrmContentProvider getProvider(URI resourceURI);
 
-    List<CrmContentProvider> getProviders();
+    Collection<CrmContentProvider> getProviders();
 }
