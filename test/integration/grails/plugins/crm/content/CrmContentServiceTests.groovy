@@ -380,6 +380,35 @@ class CrmContentServiceTests extends GroovyTestCase {
         entity.delete()
     }
 
+    void testConcurrentUpdate() {
+        def entity = new TestContentEntity(name: "Hello World").save(failOnError: true, flush: true)
+        def bytes = "This is a test".getBytes()
+        def inputStream = new ByteArrayInputStream(bytes)
+        def ref1 = crmContentService.createResource(inputStream, "test1.txt", bytes.length, "text/plain", entity)
+        assert ref1.getMetadata().bytes == bytes.length
+        bytes = "This is an updated test".getBytes()
+        inputStream = new ByteArrayInputStream(bytes)
+
+        def ref2 = CrmResourceRef.get(ref1.id)
+        ref2.name = "Name updated by #2"
+        ref2.save(failOnError: true, flush: true)
+
+        assert crmContentService.updateResource(ref1, inputStream, "text/csv") == bytes.length
+        assert ref1.getMetadata().bytes == bytes.length
+        def result = new ByteArrayOutputStream()
+        ref1.writeTo(result)
+        def s = new String(result.toByteArray())
+        assert s == "This is an updated test"
+
+        def ref3 = CrmResourceRef.get(ref1.id)
+        assert ref3.name == "Name updated by #2"
+        assert ref3.getMetadata().contentType == 'text/csv'
+
+        // Cleanup
+        assert crmContentService.deleteAllResources(entity) == 1
+        entity.delete()
+    }
+
     void testCopyResource() {
         def sourceFolder = crmContentService.createFolder(null, "source")
         def destinationFolder = crmContentService.createFolder(null, "dest")
@@ -470,6 +499,9 @@ class CrmContentServiceTests extends GroovyTestCase {
         assert crmContentService.isImage(png.name) // String version
         assert crmContentService.isImage(gif)
         assert !crmContentService.isImage(tif) // tif is not included in CrmContextService.DEFAULT_IMAGE_NAMES
+
+        // Cleanup
+        crmContentService.deleteFolder(crmContentService.getFolder("photos"))
     }
 
     void testExtension() {
