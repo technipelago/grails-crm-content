@@ -422,6 +422,7 @@ The FreeMarker service checks if templates has been updated with this interval (
 
 == Changes
 
+2.4.5:: Make it easier to use multiple storage providers in the same application
 2.4.4:: withInputStream now returns what the closure returns (was void).
 2.4.3:: Fix for threading issues when loading FreeMarker templates from different tenants.
 2.4.2:: You can now specify destination root folder when importing content with CrmContentImportService
