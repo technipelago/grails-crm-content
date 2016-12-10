@@ -56,8 +56,11 @@ Here are some real-wold examples on what type of content that can be stored and 
 The `crm-content` plugin has configurable *storage providers*. The default storage provider store
 content in the web server filesystem. Files on disc can optionally be encrypted for increased security.
 Custom storage providers can be developed to integrate with content services like Amazon S3, Google Drive or Dropbox.
-One application can have multiple storage providers and select the best storage provides based on some business logic.
-Maybe HTML files should be stored in a S3 bucket and customer contracts encrypted on  a local disc.
+One application can have multiple storage providers and select the best storage provider based on some business logic.
+Maybe HTML files should be stored in a S3 bucket and customer contracts encrypted on a local disc.
+
+TIP: The https://github.com/technipelago/grails-crm-content-aws[crm-content-aws] plugin is a storage provider
+that store content in Amazon S3 buckets. This is a must-have plugin in cloud environments.
 
 == Attachments
 
