@@ -30,6 +30,7 @@ import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang.StringUtils
+import org.grails.plugin.platform.events.EventMessage
 import org.springframework.web.multipart.MultipartFile
 
 import java.util.regex.Pattern
@@ -97,6 +98,34 @@ class CrmContentService {
             }
         }
         log.warn("Deleted $n resources in tenant $tenant")
+    }
+
+    /**
+     * If a domain instance was deleted, check if CrmResourceRef.ref pointed to it and delete it if it did.
+     *
+     * @param event
+     * @return
+     */
+    @Listener(namespace = '*', topic = 'deleted')
+    def somethingWasDeleted(EventMessage  event) {
+        Map data = (Map)event.data
+        crmSecurityService.runAs(data.user, data.tenant) {
+            def domain = event.namespace
+            def ref = "$domain@${data.id}".toString()
+            def result = CrmResourceRef.createCriteria().list() {
+                eq('tenantId', data.tenant)
+                eq('ref', ref)
+            }
+            log.info "Removing ${result.size()} attachments referenced by $ref"
+            for(m in result) {
+                try {
+                    deleteReference(m)
+                    log.debug "Attachment [$m] deleted"
+                } catch(Exception e) {
+                    log.error("Could not delete attachment [$m] referenced by $ref", e)
+                }
+            }
+        }
     }
 
     @CompileStatic
@@ -713,6 +742,7 @@ class CrmContentService {
             log.debug "Deleting [${resourceRef.name}] and it's resource"
             boolean deleted = provider.delete(resource)
             String username = crmSecurityService.currentUser?.username
+            // TODO I think namespace should be "crmResourceRef" instead of "crmContent". A breaking change?
             event(for: "crmContent", topic: "deleted",
                     data: [tenant: resourceRef.tenantId, id: resourceRef.id, name: resourceRef.name, ref: resourceRef.ref, user: username])
             return deleted
