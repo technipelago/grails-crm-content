@@ -20,10 +20,6 @@ import grails.plugins.crm.core.CrmCoreService
 import grails.plugins.crm.core.TenantEntity
 import groovy.transform.CompileStatic
 import org.apache.commons.io.FilenameUtils
-import org.apache.commons.lang.StringUtils
-
-import java.text.Normalizer
-import java.text.Normalizer.Form
 
 /**
  * This domain links a CrmFileResource (typically a document) to another domain class.
@@ -78,17 +74,24 @@ class CrmResourceRef implements CrmContentNode {
 
     static taggable = true
 
+    /**
+     * @deprecated use CrmContentUtils#removeAccents(String) instead.
+     * @param text
+     * @return
+     */
     @CompileStatic
     public static String removeAccents(String text) {
-        return text != null ? Normalizer.normalize(text, Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "") : null
+        CrmContentUtils.removeAccents(text)
     }
 
+    /**
+     * @deprecated use CrmContentUtils#normalizeName(String) instead.
+     * @param name
+     * @return
+     */
     @CompileStatic
     public static String normalizeName(String name) {
-        String result = name != null ? StringUtils.replaceChars(FilenameUtils.normalize(removeAccents(name)), '\\/|"\':?&*<>', '---__....()') : null
-        // Replace repeated special character occurrences with a single character.
-        // Also strip dot, comma and underscore from end of string.
-        return result ? result.replaceAll(/([\.\-_])\1+/, '$1').replaceAll(/[\.\-_]$/, '') : null
+        CrmContentUtils.normalizeName(name)
     }
 
     // Lazy injection of service.
@@ -120,7 +123,7 @@ class CrmResourceRef implements CrmContentNode {
             name = title
         }
         if(name != null) {
-            name = normalizeName(name)
+            name = CrmContentUtils.normalizeName(name)
         }
     }
 

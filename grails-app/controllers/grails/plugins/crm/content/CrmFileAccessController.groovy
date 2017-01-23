@@ -113,7 +113,7 @@ class CrmFileAccessController {
                     if (encoding) {
                         response.setCharacterEncoding(encoding)
                     }
-                    response.setHeader("Content-Disposition", "inline; filename=${ref.name}; size=$len")
+                    response.setHeader("Content-Disposition", "inline; filename=${CrmContentUtils.encodeFilename(ref.name)}; size=$len")
 
                     def seconds = grailsApplication.config.crm.content.cache.expires ?: DEFAULT_CACHE_SECONDS
                     cacheThis(response, seconds, ref.shared)

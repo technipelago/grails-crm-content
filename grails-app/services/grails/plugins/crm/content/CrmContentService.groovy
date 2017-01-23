@@ -269,7 +269,7 @@ class CrmContentService {
         }
         String title = params.title ?: FilenameUtils.getBaseName(filename)
         String name = params.name ?: FilenameUtils.getName(filename)
-        String normalizedName = CrmResourceRef.normalizeName(name)
+        String normalizedName = CrmContentUtils.normalizeName(name)
         String username = params.username ?: crmSecurityService.currentUser?.username
         CrmContentProvider provider = crmContentProviderFactory.getProvider(normalizedName, length, reference, username)
         String referenceIdentifier = crmCoreService.getReferenceIdentifier(reference)
@@ -916,7 +916,7 @@ class CrmContentService {
         if (ownerIdentifier) {
             resource = CrmResourceRef.createCriteria().get() {
                 eq('tenantId', tenantId)
-                eq('name', CrmResourceRef.normalizeName(filename))
+                eq('name', CrmContentUtils.normalizeName(filename))
                 eq('ref', ownerIdentifier)
                 cache true
             }
