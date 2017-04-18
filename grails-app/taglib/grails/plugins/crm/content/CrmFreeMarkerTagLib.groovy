@@ -56,6 +56,8 @@ class CrmFreeMarkerTagLib {
         def tenant = forcedTenant ?: includeTenant
         def binding = [:]
 
+        binding.putAll(params)
+
         binding.putAll(pageScope.getVariables())
         if (attrs.model) {
             binding.putAll(attrs.model)
@@ -81,6 +83,9 @@ class CrmFreeMarkerTagLib {
 
         if (crmFreeMarkerService.templateExist(tenant, template)) {
             try {
+                if(log.isDebugEnabled()) {
+                    log.debug(binding.toString())
+                }
                 crmFreeMarkerService.process(tenant, template, binding, out)
             } catch (Exception e) {
                 log.error("Error while rendering template ${template}", e)
