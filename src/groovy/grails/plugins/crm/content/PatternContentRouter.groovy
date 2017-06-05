@@ -34,6 +34,7 @@ class PatternContentRouter implements CrmContentRouter {
     Pattern pattern
     Class referenceClass
     Integer minLength
+    Integer maxLength
 
     private final CrmCoreService crmCoreService
 
@@ -52,6 +53,12 @@ class PatternContentRouter implements CrmContentRouter {
     CrmContentProvider getProvider(String filename, long length, Object ref, String username) {
         if (log.isDebugEnabled()) {
             log.debug "Get content provider for $filename"
+        }
+        if (maxLength != null && length > maxLength) {
+            if (log.isDebugEnabled()) {
+                log.debug "Length $length > $maxLength"
+            }
+            return defaultProvider
         }
         if (minLength != null && length < minLength) {
             if (log.isDebugEnabled()) {
