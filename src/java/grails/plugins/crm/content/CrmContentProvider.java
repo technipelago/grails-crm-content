@@ -130,6 +130,15 @@ public interface CrmContentProvider {
     long getLastModified(URI uri);
 
     /**
+     * Check if resource exists.
+     *
+     * @param uri resource identifier
+     * @return true if the resource exists in persistent store
+     */
+    boolean exists(URI uri);
+
+
+    /**
      * Check every file in the repository.
      * The specified closure will be called for every file in the repository.
      * If the closure returns true the file's size will be included in the total size returned by this method.

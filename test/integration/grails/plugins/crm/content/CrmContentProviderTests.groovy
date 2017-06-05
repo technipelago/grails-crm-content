@@ -30,9 +30,12 @@ class CrmContentProviderTests extends GroovyTestCase {
 
     void test1CreateFileAndRememberCleanup() {
         def folder = crmContentService.createFolder(null, "hello")
-        crmContentService.createResource("Hello World!", "hello.txt", folder)
+        def resource = crmContentService.createResource("Hello World!", "hello.txt", folder)
         assert crmContentService.getContentByPath("/hello/hello.txt") != null
+        def provider = crmContentProviderFactory.getProvider(resource.resource)
+        assert provider.exists(resource.resource) == true
         crmContentService.deleteFolder(folder)
+        assert provider.exists(resource.resource) == false
     }
 
     void test2RepositorySizeZero() {

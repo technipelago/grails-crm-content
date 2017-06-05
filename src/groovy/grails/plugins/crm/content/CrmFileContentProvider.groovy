@@ -215,6 +215,11 @@ class CrmFileContentProvider implements CrmContentProvider {
         (resource.lastUpdated ?: resource.dateCreated).time
     }
 
+    boolean exists(URI uri) {
+        final File file = getFile(uri)
+        file.exists() && !file.isDirectory()
+    }
+
     @CompileStatic
     private Map<String, Object> getMetadataForResource(CrmFileResource resource) {
         def md = [:]
