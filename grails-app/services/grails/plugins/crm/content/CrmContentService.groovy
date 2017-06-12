@@ -100,6 +100,18 @@ class CrmContentService {
         log.warn("Deleted $n resources in tenant $tenant")
     }
 
+    private String getUsername(Map<String, Object> data) {
+        String username = data.username
+        if(username == null) {
+            if(data.user instanceof Map) {
+                username = data.user['username']
+            } else {
+                username = data.user.toString()
+            }
+        }
+        return username
+    }
+
     /**
      * If a domain instance was deleted, check if CrmResourceRef.ref pointed to it and delete it if it did.
      *
@@ -108,8 +120,9 @@ class CrmContentService {
      */
     @Listener(namespace = '*', topic = 'deleted')
     def somethingWasDeleted(EventMessage  event) {
-        Map data = (Map)event.data
-        crmSecurityService.runAs(data.user, data.tenant) {
+        final Map<String, Object> data = (Map<String, Object>)event.data
+        final String username = getUsername(data)
+        crmSecurityService.runAs(username, data.tenant) {
             def domain = event.namespace
             def ref = "$domain@${data.id}".toString()
             def result = CrmResourceRef.createCriteria().list() {
