@@ -370,8 +370,6 @@ class CrmContentService {
         file.withInputStream { inputStream ->
             resource = proxy.createResource(inputStream, filename, file.length(), contentType, reference, params)
         }
-        event(for: "crmContent", topic: "created",
-                data: [tenant: resource.tenantId, id: resource.id, name: resource.name, ref: resource.ref])
         return resource
     }
 
