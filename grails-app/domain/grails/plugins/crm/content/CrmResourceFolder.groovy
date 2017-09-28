@@ -16,16 +16,15 @@
 
 package grails.plugins.crm.content
 
+import grails.plugins.crm.core.AuditEntity
 import grails.plugins.crm.core.TenantEntity
-import grails.plugins.crm.core.UuidEntity
 import groovy.transform.CompileStatic
+import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang.StringUtils
 
+import java.security.MessageDigest
 import java.text.Normalizer
 import java.text.Normalizer.Form
-import org.apache.commons.io.FilenameUtils
-import grails.plugins.crm.core.AuditEntity
-import java.security.MessageDigest
 
 /**
  * Shared folder.
@@ -36,9 +35,11 @@ class CrmResourceFolder implements CrmContentNode {
 
     def crmCoreService
 
+    String uri
     String name
     String title
     String description
+    String iconName
     String username
     String passwordHash
     String passwordSalt
@@ -48,13 +49,15 @@ class CrmResourceFolder implements CrmContentNode {
     static hasMany = [folders: CrmResourceFolder]
 
     static constraints = {
+        uri(maxSize: 255, nullable: true)
         name(maxSize: 255, blank: false, unique: 'parent')
         title(maxSize: 255, blank: false)
         description(maxSize: 2000, nullable: true, widget: 'textarea')
+        iconName(maxSize: 80, nullable: true)
         username(size: 3..80, maxSize: 80, nullable: true)
         passwordSalt(maxSize: 80, nullable: true)
         passwordHash(maxSize: 255, nullable: true)
-        parent(nullable:true)
+        parent(nullable: true)
     }
 
     static mapping = {
@@ -87,7 +90,7 @@ class CrmResourceFolder implements CrmContentNode {
             name = title
         }
 
-        if(name != null) {
+        if (name != null) {
             name = normalizeName(name)
         }
     }
@@ -114,14 +117,14 @@ class CrmResourceFolder implements CrmContentNode {
 
     transient Set<CrmResourceFolder> getSubFolders() {
         def tree = [this] as Set
-        for(f in folders) {
+        for (f in folders) {
             tree.addAll(f.getSubFolders())
         }
         tree
     }
 
     transient String getIcon() {
-        return 'folder'
+        return iconName ?: 'folder'
     }
 
     transient List<CrmResourceRef> getFiles(Map params = [:]) {
@@ -137,7 +140,7 @@ class CrmResourceFolder implements CrmContentNode {
     transient List<CrmResourceFolder> getPath() {
         def list = []
         def folder = this
-        while(folder) {
+        while (folder) {
             list << folder
             folder = folder.parent
         }
@@ -158,7 +161,7 @@ class CrmResourceFolder implements CrmContentNode {
         md.contentType = null
         md.bytes = 0L
         md.size = ''
-        md.icon = 'folder'
+        md.icon = 'folder' // Due to backward compatibility we cannot call getIcon() here.
         md.created = dateCreated
         md.modified = lastUpdated ?: dateCreated
         md.hash = getMD5()
@@ -168,11 +171,11 @@ class CrmResourceFolder implements CrmContentNode {
 
     String getMD5() {
         MessageDigest digest = MessageDigest.getInstance("MD5")
-        digest.update([id:id, name:name, modified:(lastUpdated ?: dateCreated)].toString().getBytes("UTF-8"))
-        for(f in folders) {
-            digest.update([id:f.id, name:f.name, modified:(f.lastUpdated ?: f.dateCreated)].toString().getBytes("UTF-8"))
+        digest.update([id: id, name: name, modified: (lastUpdated ?: dateCreated)].toString().getBytes("UTF-8"))
+        for (f in folders) {
+            digest.update([id: f.id, name: f.name, modified: (f.lastUpdated ?: f.dateCreated)].toString().getBytes("UTF-8"))
         }
-        for(f in files) {
+        for (f in files) {
             digest.update(f.getMetadata().toString().getBytes("UTF-8"))
         }
         new BigInteger(1, digest.digest()).toString(16)

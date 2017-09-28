@@ -804,7 +804,12 @@ class CrmContentService {
 
     @Transactional
     CrmResourceFolder createFolder(CrmResourceFolder parent, String name, String title = null, String description = null, String password = null) {
+        createFolder(parent, [name: name, title: title, description: description, password: password])
+    }
+
+    CrmResourceFolder createFolder(CrmResourceFolder parent, Map params) {
         // Use same tenant as parent, otherwise we screw up things completely.
+        String name = params.name
         def tenant = parent?.tenantId ?: TenantUtils.tenant
         def normalizedName = CrmResourceFolder.normalizeName(name)
         def folder = CrmResourceFolder.createCriteria().get {
@@ -819,7 +824,17 @@ class CrmContentService {
         if (folder) {
             log.debug "Folder [${folder.name}] already exists in tenant $tenant"
         } else {
-            folder = new CrmResourceFolder(tenantId: tenant, parent: parent, shared: parent?.shared == true, name: name, title: title, description: description)
+            def values = [:]
+            values.putAll(params)
+            values.tenantId = tenant
+            values.parent = parent
+            values.shared = parent?.shared == true
+            values.name = normalizedName
+            if(values.icon && ! values.iconName) {
+                values.iconName = values.remove('icon')
+            }
+            def password = values.remove('password')
+            folder = new CrmResourceFolder(values)
             if (password != null) {
                 if (password != "") {
                     def pair = crmSecurityService.hashPassword(password)
