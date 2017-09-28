@@ -11,7 +11,7 @@
     <div class="span8 offset1">
         <div class="row-fluid">
 
-            <crm:render template="${(grailsApplication.config.crm.content.cms.path ?: 'pages') + (uri ?: 'index.html')}"
+            <crm:render template="${(grailsApplication.config.crm.content.cms.path ?: '/wwwroot/') + (uri ?: 'index.html')}"
                         extensions="${grailsApplication.config.crm.content.cms.extensions}">
                 <h1><g:message code="crmContent.page.not.found.title" default="Page not found!"/></h1>
 
