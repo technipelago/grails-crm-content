@@ -770,14 +770,15 @@ class CrmContentService {
 
     @CompileStatic
     private String trimPath(String path) {
-        // Trim leading and trailing slashes.
+        // Trim leading slashes.
         while (path.startsWith('/') || path.startsWith('\\')) {
             path = path.substring(1)
         }
+        // Trim trailing slashes.
         while (path.endsWith('/') || path.endsWith('\\')) {
             path = path[0..-2]
         }
-        return path
+        return path.replaceAll('\\/\\/', '/') // Remove double slashes
     }
 
     @Transactional(readOnly = true)
