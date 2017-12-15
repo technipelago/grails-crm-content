@@ -30,6 +30,8 @@ class CrmPageNotFoundController {
 
     private static final int DEFAULT_CACHE_SECONDS = 60 * 60
 
+    private static final String INDEX_FILE = 'index.html'
+
     def grailsApplication
     def crmContentService
     def crmSecurityService
@@ -37,8 +39,10 @@ class CrmPageNotFoundController {
     def index() {
         String wantedPage = request.forwardURI - request.contextPath
         if (wantedPage == '/') {
-            wantedPage = 'index.html'
+            wantedPage = INDEX_FILE
         }
+
+        log.debug("GET $wantedPage")
 
         // Render HTML content using the crmPageNotFound/index view. It embeds the HTML in a GSP layout template.
         if (wantedPage.endsWith('.html') || wantedPage.endsWith('.htm')) {
@@ -51,8 +55,24 @@ class CrmPageNotFoundController {
         try {
             def root = grailsApplication.config.crm.content.cms.path ?: '/wwwroot'
             def tenant = grailsApplication.config.crm.content.include.tenant ?: 1L
-            def ref = crmContentService.getContentByPath("$root/$wantedPage", tenant)
+            def ref = crmContentService.getContentByPath("$root$wantedPage", tenant)
             if (ref) {
+                if (ref instanceof Collection) {
+                    def tmp = ref.find { it.name == INDEX_FILE }
+                    if (tmp) {
+                        ref = tmp
+                    } else {
+                        ref = ref.first()
+                    }
+                    // Render HTML content using the crmPageNotFound/index view. It embeds the HTML in a GSP layout template.
+                    if (ref.name.endsWith('.html') || ref.name.endsWith('.htm')) {
+                        response.setStatus(200)
+                        return [uri: "$wantedPage/${ref.name}"]
+                    }
+                }
+
+                log.debug("Found $ref using path $root$wantedPage")
+
                 if (!crmContentService.hasViewPermission(ref, crmSecurityService.isAuthenticated())) {
                     log.warn("User [${crmSecurityService.currentUser?.username}] is not permitted to view content [$ref] with status [${ref.statusText}]")
                     response.sendError(SC_FORBIDDEN)
