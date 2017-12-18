@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 package grails.plugins.crm.content
 
 import grails.plugins.crm.core.TenantUtils
@@ -29,6 +27,8 @@ import javax.servlet.http.HttpServletRequest
  */
 class CrmContentTagLib {
 
+    private static final String INDEX_FILE = 'index.html'
+
     static namespace = "crm"
 
     def grailsApplication
@@ -39,13 +39,13 @@ class CrmContentTagLib {
     private Long getTemplateTenant(HttpServletRequest request) {
         def theme = request.getAttribute('crmTheme')
         if (theme) {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("Found CRM theme $theme")
             }
             return theme.tenant
         }
         def tenant = crmThemeService.getThemeTenant()
-        if(tenant != null) {
+        if (tenant != null) {
             return tenant
         }
         return grailsApplication.config.crm.content.include.tenant ?: 0L
@@ -107,14 +107,14 @@ class CrmContentTagLib {
                     }
                 }
             } else {
-                if(log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.debug("Looking for template $template in tenant $tenant")
                 }
                 result = crmContentService.getContentByPath("${template}_$lang", tenant)
                 if (!result) {
                     result = crmContentService.getContentByPath(template, tenant)
                 }
-                if(log.isDebugEnabled() && result) {
+                if (log.isDebugEnabled() && result) {
                     log.debug("Found template $result")
                 }
             }
@@ -220,6 +220,48 @@ class CrmContentTagLib {
             }
         }
         s.toString()
+    }
+
+    def resource = { attrs, body ->
+        def ref = attrs.remove('resource')
+        if (!ref) {
+            throwTagError("Tag [resource] is missing required attribute [resource]")
+        }
+
+        def forcedTenant = attrs.tenant ? Long.valueOf(attrs.tenant) : 0L
+        def includeTenant = forcedTenant ?: getTemplateTenant(request)
+
+        if (ref instanceof Long) {
+            def tmp = CrmResourceRef.findByIdAndTenantId(ref, includeTenant)
+            if (!tmp) {
+                throwTagError("Tag [resource] cannot find resource with id [$ref]")
+            }
+            ref = tmp
+        } else if(ref instanceof String) {
+            def tmp = crmContentService.getContentByPath(ref, includeTenant)
+            if (!tmp && !attrs.quiet) {
+                throwTagError("Tag [resource] cannot find resource with path [$ref]")
+            }
+            ref = tmp
+        }
+
+        if (ref instanceof CrmResourceRef) {
+            if (!(ref.shared || ((ref.restricted || ref.published) && (ref.tenantId == TenantUtils.tenant)))) {
+                throwTagError("Can't access non-shared resource [$ref]")
+            }
+        } else if (ref instanceof CrmResourceFolder) {
+            def tmp = ref.files.find { it.name == INDEX_FILE }
+            if (tmp) {
+                ref = tmp
+            } else {
+                ref = ref.first()
+            }
+        }
+
+        if (ref) {
+            Map map = [(attrs.var ?: 'it'): ref]
+            out << body(map)
+        }
     }
 
     /**
@@ -375,7 +417,7 @@ class CrmContentTagLib {
         int i = 0
         for (r in result) {
             Map map = [(variableName): r]
-            if(attrs.index) {
+            if (attrs.index) {
                 map[attrs.index] = i++
             }
             out << body(map)
