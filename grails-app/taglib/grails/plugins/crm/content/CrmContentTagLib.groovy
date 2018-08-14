@@ -186,10 +186,12 @@ class CrmContentTagLib {
         return list[0..(max - 1)]
     }
 
-    def image = { attrs ->
+    def image = { attrs, body ->
         def params = takeAttributes(attrs, ['resource', 'reference', 'statusFilter', 'titleFilter', 'nameFilter'])
+        def found = false
         if (params.resource) {
             out << """<img src="${createResourceLink(resource: params.resource)}"${renderAttributes(attrs)}/>"""
+            found = true
         } else if (params.reference) {
             def r = crmContentService.findResourcesByReference(params.reference,
                     [status: params.statusFilter, title: params.titleFilter, name: params.nameFilter]).find {
@@ -197,7 +199,11 @@ class CrmContentTagLib {
             }
             if (r) {
                 out << """<img src="${createResourceLink(resource: r)}"${renderAttributes(attrs)}/>"""
+                found = true
             }
+        }
+        if(!found) {
+            out << body()
         }
     }
 
