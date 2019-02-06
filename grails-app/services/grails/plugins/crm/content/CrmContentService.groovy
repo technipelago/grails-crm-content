@@ -973,7 +973,7 @@ class CrmContentService {
             if (content.ref.startsWith('crmResourceFolder@')) {
                 parent = content.reference
             } else {
-                if (content.isShared() || content.isPublished()) {
+                if (content.isShared() || content.isRestricted() || content.isPublished()) {
                     def path = content.ref.split('@').toList()
                     path << content.name
                     if (urlEncoded) {
