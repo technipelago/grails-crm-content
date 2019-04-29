@@ -222,7 +222,7 @@ class CrmFileContentProvider implements CrmContentProvider {
 
     @CompileStatic
     private Map<String, Object> getMetadataForResource(CrmFileResource resource) {
-        def md = [:]
+        Map<String, Object> md = [:]
         md.uri = getUri(resource.id)
         md.contentType = resource.contentType
         md.bytes = resource.length
