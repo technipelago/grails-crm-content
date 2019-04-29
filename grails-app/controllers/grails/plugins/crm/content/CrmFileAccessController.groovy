@@ -149,7 +149,9 @@ class CrmFileAccessController {
             if (log.isDebugEnabled()) {
                 log.error "Rendering of resource failed with status code $status"
             }
-            response.sendError(status)
+            if(!response.isCommitted()) {
+                response.sendError(status)
+            }
         }
 
         return null
