@@ -60,6 +60,19 @@ class CrmContentTagLib {
      * @attr model the model to use when parsing template
      */
     def render = { attrs, body ->
+        def locale = attrs.locale
+        def lang
+        if (locale) {
+            if(locale instanceof Locale) {
+                lang = locale.language
+            } else {
+                lang = locale.toString()
+                locale = new Locale(lang)
+            }
+        } else {
+            locale = RequestContextUtils.getLocale(request) ?: Locale.default
+            lang = locale.language
+        }
         def template = attrs.template
         if (!template) {
             throwTagError("Tag [render] is missing required attribute [template]")
@@ -94,7 +107,6 @@ class CrmContentTagLib {
             // Find out what tenant to use for template lookup.
             def tenant = includeTenant
             def extensions = attrs.extensions
-            def lang = (attrs.locale ?: (RequestContextUtils.getLocale(request) ?: Locale.default)).language
             def result
             if (extensions) {
                 for (String ext in extensions) {
@@ -144,7 +156,7 @@ class CrmContentTagLib {
             }
             // Lazy initialize the template model.
             def createModel = { r ->
-                def m = [:]
+                def m = [locale: locale]
                 m.putAll(pageScope.getVariables())
                 if (attrs.model) {
                     m.putAll(attrs.model)
