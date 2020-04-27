@@ -447,7 +447,7 @@ The FreeMarker service checks if templates has been updated with this interval (
 
 == Changes
 
-2.4.7:: Adds two new properties on CrmResourceFolder, `uri` and `iconName` *DATABASE MIGRATION!*
+2.5.0:: Adds two new properties on CrmResourceFolder, `uri` and `iconName` *DATABASE MIGRATION!*
 2.4.6:: Content-Disposition filename is now URL encoded. Content router can be replaced with custom impl to store content in other locations.
 2.4.5:: Make it easier to use multiple storage providers in the same application
 2.4.4:: withInputStream now returns what the closure returns (was void).
