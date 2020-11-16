@@ -25,6 +25,8 @@ import grails.events.Listener
 import grails.plugins.crm.content.CrmResourceRef
 import grails.plugins.crm.core.TenantUtils
 
+import java.util.concurrent.ConcurrentHashMap
+
 /**
  * FreeMarker Service.
  */
@@ -38,7 +40,7 @@ class CrmFreeMarkerService {
     def crmCoreService
     def crmContentService
 
-    private Map<Long, Configuration> configurations = [:].withDefault { tenant ->
+    private Map<Long, Configuration> configurations = new ConcurrentHashMap().withDefault { tenant ->
         def grailsConfig = grailsApplication.config.crm.content.freemarker.template
         def cfg = new Configuration(FREEMARKER_FEATURE_LEVEL)
 
